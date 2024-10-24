@@ -1,23 +1,63 @@
-from itertools import chain
+from collections import OrderedDict
+
 
 class Job:
     """ stores jobs """
 
     def get_machines_ids(self):
-        return list(self.schedule.keys())
+        return list(self.m_p.keys())
+
+    def preceeding_machine(self, m_id):
+        i = self.machines.index(m_id)
+        if i == 0:
+            raise ValueError ("this is first machine, no preceeding one")
+        return self.machines[i-1]
 
 
-    def __init__(self, id:int, schedule:dict, release:int, due:int, weight:float):
-        """ schedule should be initialised {m1: p(j, m1), ....} """
+
+    def get_first_machine(self):
+        return self.machines[0]
+
+    def get_last_machine(self):
+        k = self.no_machines - 1
+        print(k)
+        return self.machines[k]
+
+
+    def machines_to_m(self, m_id):
+        m = self.machines
+        i = m.index(m_id) + 1
+        return self.machines[0:i]
+
+    def machines_from_m(self, m_id):
+        m = self.machines
+        i = m.index(m_id) + 1
+        l = len(m)
+        return self.machines[i:l]
+
+
+
+
+
+
+    def __init__(self, id:int, m_p:OrderedDict, release:int, due:int, weight:float):
+        """ m_p should be initialised {m1: p(j, m1), ....} """
 
 
         self.id =id
-        self.schedule = schedule
+        self.m_p = m_p
         self.release = release
         self.due = due
         self.weight = weight
+        self.machines = self.get_machines_ids()
+        self.no_machines = len(self.machines)
+        self.machines_but_last = self.machines[0: self.no_machines-1]
 
+        self.first_machine = self.get_first_machine()
+        self.last_machine = self.get_last_machine()
 
+        if type(self.m_p) != OrderedDict:
+            raise ValueError ("machines should be in ordered dict")
 
 
 
@@ -25,25 +65,38 @@ class Job:
 class JobShop:
     """ stores job shop problem """
 
-    def get_no_machines(self, jobs):
+    def get_no_machines(self):
         machines = []
-        for job in jobs:
-            machines += job.get_machines_ids()
+        for job in self.jobs:
+            machines += job.machines
     
         unique_m = list(set(machines))
         return len(unique_m)
 
 
-    def get_ids(self, jobs:list):
-        return [job.id for job in jobs]
+    def get_jobs_inds(self):
+        return [job.id for job in self.jobs]
+
+    def get_job(self, job_id):
+        for job in self.jobs:
+            if job.id == job_id:
+                return ( job )
+        raise ValueError (f"no job with id {job_id}")
+
+    
+    def machines_2_jobs(self, job1_id, job2_id) -> set:
+        job1 = self.get_job(job1_id)
+        job2 = self.get_job(job2_id)
+        return( set.intersection(set(job1.machines), set(job2.machines)) )
 
 
     def __init__(self, jobs:list):
 
-        ids = self.get_ids(jobs)
-        if not len(ids) == len(list(set(ids))):
-            raise ValueError ("jobs ids not unique")
-
         self.jobs = jobs
         self.no_jobs = len(jobs)
-        self.no_machines = self.get_no_machines(jobs)
+        self.no_machines = self.get_no_machines()
+        self.job_ids = self.get_jobs_inds()
+        self.no_jobs = len(self.job_ids)
+
+        if not self.no_jobs == len(list(set(self.job_ids))):
+            raise ValueError ("jobs ids not unique")
