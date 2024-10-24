@@ -20,7 +20,6 @@ class Job:
 
     def get_last_machine(self):
         k = self.no_machines - 1
-        print(k)
         return self.machines[k]
 
 
@@ -34,6 +33,23 @@ class Job:
         i = m.index(m_id) + 1
         l = len(m)
         return self.machines[i:l]
+
+    
+    def time_limits(self):
+        all_processing_time = sum(list(self.m_p.values()))
+        t_min = self.release
+        t_max = self.due - all_processing_time
+
+        t_lim = OrderedDict()
+
+        for key, value in self.m_p.items():
+            t_min += value
+            t_max += value
+            t_lim[key] = (t_min, t_max)
+
+        assert t_max == self.due
+
+        return t_lim
 
 
 

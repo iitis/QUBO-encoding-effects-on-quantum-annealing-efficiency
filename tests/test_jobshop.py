@@ -25,6 +25,11 @@ def test_Job():
     assert J.machines_from_m(m_id = 1) == [2]
     assert J.machines_from_m(m_id = 2) == []
 
+    limits = J.time_limits()
+    assert limits == {1:(3, 7), 2: (6, 10)}
+    assert type(limits) == OrderedDict
+
+
 
     # reversed order of machines
     m_p = OrderedDict({2:3, 1:2})
@@ -64,12 +69,14 @@ def test_Jobs_different_instance():
 
 
     m_p = OrderedDict({1:2})
-    J = Job(id = 1, m_p=m_p, release=1, due=20, weight=0.5)
+    J = Job(id = 1, m_p=m_p, release=1, due=5, weight=0.5)
     assert J.machines == [1]
     assert J.machines_but_last == []
 
     assert J.machines_to_m(m_id = 1) == [1]
     assert J.machines_from_m(m_id = 1) == []
+
+    assert J.time_limits() == {1:(3,5)}
 
 
 
