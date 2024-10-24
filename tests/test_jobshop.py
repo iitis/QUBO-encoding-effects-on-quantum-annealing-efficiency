@@ -34,6 +34,8 @@ def test_JobShop():
     assert JS.no_jobs == 3
     assert JS.no_machines == 3
 
+    assert JS.get_ids(jobs) == [1,2,3]
+
 
 
 def test_JobShop_errors():
