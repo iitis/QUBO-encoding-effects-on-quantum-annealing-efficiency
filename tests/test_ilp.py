@@ -1,7 +1,7 @@
 import pytest
 from collections import OrderedDict
 
-from JobShop_QUBO import Job, JobShop, ILP_Encoding, make_ilp_docplex
+from JobShop_QUBO import Job, JobShop, ILP_Encoding, make_ilp_docplex, docplex_sol2_schedule
 
 
 
@@ -52,5 +52,11 @@ def test_ILP_solution():
     assert sol['t_3_1'] == 2
     assert sol['t_3_3'] == 5
     assert sol['y_2_3_3'] == 0
+
+
+    sched, for_plotter = docplex_sol2_schedule(model, sol, ILP)
+
+    assert sched == {2: {2: (1.0, 3.0), 3: (5.0, 7.0)}, 3: {1: (1.0, 2.0), 3: (2.0, 5.0)}}
+
 
 

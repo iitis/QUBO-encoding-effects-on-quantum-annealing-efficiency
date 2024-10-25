@@ -131,3 +131,39 @@ def make_ilp_docplex(ILP_vars):
     return model
 
 
+def docplex_sol2_schedule(model, sol, ILP_vars):
+    for var in model.iter_variables():
+        print(f"{var.name}: {var.solution_value}")
+
+    schedule = {}
+
+    sched4plotter = {}
+    JS = ILP_vars.JobShop
+
+    for Job in JS.jobs:
+        j = Job.id
+        jobs = {}
+        ms = []
+        times = []
+        for m in Job.machines:
+            ms.append(m)
+            ms.append(m)
+
+            t = sol[f't_{j}_{m}']
+
+            times.append(t - Job.m_p[m])
+            times.append(t)
+
+            jobs[m] = (t - Job.m_p[m], t)
+
+        sched4plotter[j] = [ms, times]
+
+        schedule[j] = jobs
+
+    return schedule, sched4plotter
+
+    
+
+
+
+
