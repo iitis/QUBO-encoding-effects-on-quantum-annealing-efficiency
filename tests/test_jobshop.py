@@ -1,6 +1,8 @@
 import pytest
-from JobShop_QUBO import Job, JobShop
 from collections import OrderedDict
+
+from JobShop_QUBO import Job, JobShop
+
 
 
 def test_Job():
@@ -92,6 +94,10 @@ def test_Job_errors():
     with pytest.raises(ValueError) as exc_info:
         J = Job(id = 1, m_p={2:3, 1:2}, release=1, due=10, weight=0.5)
     assert exc_info.value.args[0] == "machines should be in ordered dict"
+
+    with pytest.raises(ValueError) as exc_info:
+        J = Job(id = "1", m_p={2:3, 1:2}, release=1, due=10, weight=0.5)
+    assert exc_info.value.args[0] == "job id type <class 'str'> should be int"
 
 
 

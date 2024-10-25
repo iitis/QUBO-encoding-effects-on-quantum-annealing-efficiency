@@ -1,4 +1,7 @@
 """ solves ILP problem """
+from docplex.mp.model import Model
+from docplex.mp.solution import SolveSolution
+
 
 from .jobshop import Job, JobShop
 
@@ -32,27 +35,66 @@ class ILP_Variables:
         return lower, upper
 
 
+    def objective_vars(self, JobShop):
+        obj_vars = {}
+        for Job in JobShop.jobs:
+            j = Job.id
+            m = Job.last_machine
+
+            var_id = f"t_{j}_{m}"
+
+            r = self.upperlim[var_id]  - self.lowerlim[var_id]
+
+            obj_vars[var_id] = Job.weight / r
+        
+        return obj_vars
+
+
 
     def __init__(self, JobShop):
 
         lower_t, upper_t = self.get_t_vars(JobShop) 
         lower_y, upper_y = self.get_y_vars(JobShop)
 
-
+        #self.JobShop = JobShop
         self.lowerlim = lower_t | lower_y
         self.upperlim = upper_t | upper_y
+        self.obj_input = self.objective_vars(JobShop)
+        """ the objective for """
+        self.objoffset = 0
+        self.set_objective_offset(JobShop)
+
+
+    
+    def set_objective_offset(self, JobShop):
+
+        for Job in JobShop.jobs:
+            j = Job.id
+            m = Job.last_machine
+
+            var_id = f"t_{j}_{m}"
+
+            r = self.upperlim[var_id] - self.lowerlim[var_id]
+
+            self.objoffset += Job.weight / r * self.lowerlim[var_id]
+        
 
 
 
-def make_ilp_docplex(prob, ILP_vars):
+def make_ilp_docplex(ILP_vars):
     "create the docplex model return the docplex model object"
     model = Model(name='linear_programing_JobShop')
 
-    lower_bounds = ILP_vars.lowerlim.values()
-    upper_bounds = ILP_vars.upperlim.values()
+    lower_bounds = list(ILP_vars.lowerlim.values())
+    upper_bounds = list(ILP_vars.upperlim.values())
     var_ids = ILP_vars.lowerlim.keys()
 
 
     variables = model.integer_var_dict(var_ids, lb=lower_bounds, ub=upper_bounds, name=var_ids)
+
+    model.minimize(sum(variables[k] * weight for k, weight in ILP_vars.obj_input.items()) - ILP_vars.objoffset)
+
+
+    return model
 
 

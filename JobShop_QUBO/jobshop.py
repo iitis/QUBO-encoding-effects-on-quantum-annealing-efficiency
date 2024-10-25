@@ -53,12 +53,11 @@ class Job:
 
 
 
-
-
-
     def __init__(self, id:int, m_p:OrderedDict, release:int, due:int, weight:float):
         """ m_p should be initialised {m1: p(j, m1), ....} """
 
+        if type(id) != int:
+            raise ValueError (f"job id type {type(id)} should be int")
 
         self.id =id
         self.m_p = m_p
