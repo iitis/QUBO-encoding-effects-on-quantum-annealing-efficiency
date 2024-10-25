@@ -13,6 +13,7 @@ class ILP_Encoding:
 
     def get_y_vars(self, JobShop):
 
+        jobs_machines = []
         lower = {}
         upper = {}
         for j1 in JobShop.job_ids:
@@ -23,7 +24,9 @@ class ILP_Encoding:
                         lower[var_id] = 0
                         upper[var_id] = 1
 
-        return lower, upper
+                        job_machines.append([j1, j2, m])
+
+        return lower, upper, job_machines
 
 
 
@@ -37,11 +40,13 @@ class ILP_Encoding:
             upper_t[var] = u
 
 
-        lower_y, upper_y = self.get_y_vars(JobShop)
+        lower_y, upper_y, ys = self.get_y_vars(JobShop)
 
         self.JobShop = JobShop
+        self.ys = ys
         self.lowerlim = lower_t | lower_y
         self.upperlim = upper_t | upper_y
+
 
         """ the objective  """
         obj_vars = {}
@@ -68,6 +73,11 @@ class ILP_Encoding:
                     constraints.append([f"t_{j}_{m0}", Job.m_p[m] , f"t_{j}_{m}"])
 
         return constraints
+
+    
+    def machine_occupancy_constraint(self):
+        0
+
 
        
 
