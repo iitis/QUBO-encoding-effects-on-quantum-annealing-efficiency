@@ -16,6 +16,8 @@ def test_var_creation():
     assert ILP.upperlim == {'t_2_2': 8, 't_2_3': 10, 't_3_1': 7, 't_3_3': 10, 'y_2_3_3': 1}
     assert ILP.obj_input == {'t_2_3': 0.1,  't_3_3': 0.1}
     assert ILP.objoffset == 1.0
+    assert ILP.process_t_constr == [['t_2_2', 2, 't_2_3'], ['t_3_1', 3, 't_3_3']]
+
 
 
 def test_ILP_solution():
@@ -30,7 +32,9 @@ def test_ILP_solution():
     model = make_ilp_docplex(ILP)
 
     assert str(model.get_objective_expr()) == "0.100t_2_3+0.100t_3_3-1"
+    
 
+    print(model.lp_string)
 
     sol = model.solve()
 
@@ -43,4 +47,5 @@ def test_ILP_solution():
     assert sol['t_3_1'] == 2
     assert sol['t_3_3'] == 5
     assert sol['y_2_3_3'] == 0
+
 

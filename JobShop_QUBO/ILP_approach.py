@@ -52,9 +52,7 @@ class ILP_Encoding:
         self.objoffset = JobShop.objoffset
         """  constraints """
         
-        self.processing_time_constraint(JobShop)
-
-
+        self.process_t_constr = self.processing_time_constraint(JobShop)
 
     
     def processing_time_constraint(self, JobShop):
@@ -67,8 +65,9 @@ class ILP_Encoding:
                 if m != m0:
                     mp = Job.preceeding_machine(m)
 
-                    print(j, mp, m)
                     constraints.append([f"t_{j}_{m0}", Job.m_p[m] , f"t_{j}_{m}"])
+
+        return constraints
 
        
 
@@ -83,6 +82,10 @@ def make_ilp_docplex(ILP_vars):
 
 
     variables = model.integer_var_dict(var_ids, lb=lower_bounds, ub=upper_bounds, name=var_ids)
+
+    for (lhs_var, lhs_number, rhs_var) in ILP_vars.process_t_constr:
+        model.add_constraint(
+            variables[lhs_var] + lhs_number <= variables[rhs_var])
 
     model.minimize(sum(variables[k] * weight for k, weight in ILP_vars.obj_input.items()) - ILP_vars.objoffset)
 
