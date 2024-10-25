@@ -58,5 +58,9 @@ def test_ILP_solution():
 
     assert sched == {2: {2: (1.0, 3.0), 3: (5.0, 7.0)}, 3: {1: (1.0, 2.0), 3: (2.0, 5.0)}}
 
+    print(for_plotter)
+
+    assert 1 == 2
+
 
 
