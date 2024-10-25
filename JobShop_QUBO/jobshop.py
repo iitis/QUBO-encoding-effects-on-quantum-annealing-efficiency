@@ -105,6 +105,35 @@ class JobShop:
         return( set.intersection(set(job1.machines), set(job2.machines)) )
 
 
+    
+    def get_t_with_ranges(self):
+        t_ranges = {}
+
+        for Job in self.jobs:
+            j= Job.id
+            lims_job = Job.time_limits()
+            for m in Job.machines:
+
+                t_ranges[(j,m)] = lims_job[m]
+        return t_ranges
+
+
+
+    def get_objective_vars(self):
+
+        for Job in self.jobs:
+            j = Job.id
+            m = Job.last_machine
+
+            (l,u)  = self.t_ranges[(j,m)]
+
+            self.obj_vars[(j,m)] = Job.weight / (u-l)
+
+            self.objoffset += Job.weight * l / (u-l)
+        
+
+
+
     def __init__(self, jobs:list):
 
         self.jobs = jobs
@@ -115,3 +144,9 @@ class JobShop:
 
         if not self.no_jobs == len(list(set(self.job_ids))):
             raise ValueError ("jobs ids not unique")
+
+        self.t_ranges = self.get_t_with_ranges()
+        self.obj_vars = {}
+        self.objoffset = 0
+        self.get_objective_vars()
+

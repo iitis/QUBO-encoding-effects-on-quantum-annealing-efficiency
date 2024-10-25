@@ -127,6 +127,20 @@ def test_JobShop():
 
 
 
+def test_JobShop_auxiliary4vars():
+    J2 = Job(id = 2, m_p=OrderedDict({2:2, 3:2}), release=1, due=10, weight=0.5)
+    J3 = Job(id = 3, m_p=OrderedDict({1:1, 3:3}), release=1, due=10, weight=0.5)
+
+    JS = JobShop([J2, J3])
+
+    "(job, mashine): (tmin, tmax)"
+    assert JS.t_ranges == {(2,2): (3,8), (2,3): (5,10), (3,1): (2,7), (3,3): (5,10)}
+    "(job, mashine)"
+    assert JS.obj_vars == {(2,3): 0.1,  (3,3): 0.1}
+    assert JS.objoffset == 1.0
+
+
+
 def test_JobShop_errors():
     J = Job(id = 1, m_p=OrderedDict({1:2, 2:3}), release=1, due=10, weight=0.5)
     with pytest.raises(ValueError) as exc_info:

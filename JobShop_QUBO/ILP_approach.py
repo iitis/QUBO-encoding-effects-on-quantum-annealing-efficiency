@@ -6,19 +6,10 @@ from docplex.mp.solution import SolveSolution
 from .jobshop import Job, JobShop
 
 
-class ILP_Variables:
+ 
+class ILP_Encoding:
 
-    def get_t_vars(self, JobShop):
-        lower = {}
-        upper = {}
-        for Job in JobShop.jobs:
-            j= Job.id
-            lims_job = Job.time_limits()
-            for m in Job.machines:
-                var = f"t_{j}_{m}"
 
-                (lower[var], upper[var]) = lims_job[m]
-        return lower, upper
 
     def get_y_vars(self, JobShop):
 
@@ -35,50 +26,51 @@ class ILP_Variables:
         return lower, upper
 
 
-    def objective_vars(self, JobShop):
-        obj_vars = {}
-        for Job in JobShop.jobs:
-            j = Job.id
-            m = Job.last_machine
-
-            var_id = f"t_{j}_{m}"
-
-            r = self.upperlim[var_id]  - self.lowerlim[var_id]
-
-            obj_vars[var_id] = Job.weight / r
-        
-        return obj_vars
-
-
 
     def __init__(self, JobShop):
 
-        lower_t, upper_t = self.get_t_vars(JobShop) 
+        lower_t = {}
+        upper_t = {}
+        for (j, m), (l,u) in JobShop.t_ranges.items():
+            var = f"t_{j}_{m}"
+            lower_t[var] = l
+            upper_t[var] = u
+
+
         lower_y, upper_y = self.get_y_vars(JobShop)
 
-        #self.JobShop = JobShop
+        self.JobShop = JobShop
         self.lowerlim = lower_t | lower_y
         self.upperlim = upper_t | upper_y
-        self.obj_input = self.objective_vars(JobShop)
-        """ the objective for """
-        self.objoffset = 0
-        self.set_objective_offset(JobShop)
+
+        """ the objective  """
+        obj_vars = {}
+        for (j,m), w in JobShop.obj_vars.items():
+            obj_vars[f"t_{j}_{m}"] = w
+
+        self.obj_input = obj_vars 
+        self.objoffset = JobShop.objoffset
+        """  constraints """
+        
+        self.processing_time_constraint(JobShop)
+
 
 
     
-    def set_objective_offset(self, JobShop):
-
+    def processing_time_constraint(self, JobShop):
+        """ left val + left var <= right var""" 
+        constraints = []
         for Job in JobShop.jobs:
             j = Job.id
-            m = Job.last_machine
+            m0 = Job.first_machine
+            for m in Job.machines:
+                if m != m0:
+                    mp = Job.preceeding_machine(m)
 
-            var_id = f"t_{j}_{m}"
+                    print(j, mp, m)
+                    constraints.append([f"t_{j}_{m0}", Job.m_p[m] , f"t_{j}_{m}"])
 
-            r = self.upperlim[var_id] - self.lowerlim[var_id]
-
-            self.objoffset += Job.weight / r * self.lowerlim[var_id]
-        
-
+       
 
 
 def make_ilp_docplex(ILP_vars):
