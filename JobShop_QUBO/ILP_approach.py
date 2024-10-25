@@ -24,9 +24,9 @@ class ILP_Encoding:
                         lower[var_id] = 0
                         upper[var_id] = 1
 
-                        job_machines.append([j1, j2, m])
+                        jobs_machines.append((j1, j2, m))
 
-        return lower, upper, job_machines
+        return lower, upper, jobs_machines
 
 
 
@@ -57,13 +57,16 @@ class ILP_Encoding:
         self.objoffset = JobShop.objoffset
         """  constraints """
         
-        self.process_t_constr = self.processing_time_constraint(JobShop)
+        self.process_t_constr = self.processing_time_constraint()
+        self.machine_constraint = self.machine_occupancy_constraint()
 
     
-    def processing_time_constraint(self, JobShop):
-        """ left val + left var <= right var""" 
+    def processing_time_constraint(self):
+        """ left var + left const <= right var
+              t_j_mp  p_j_m <+ t_j_m
+        """ 
         constraints = []
-        for Job in JobShop.jobs:
+        for Job in self.JobShop.jobs:
             j = Job.id
             m0 = Job.first_machine
             for m in Job.machines:
@@ -75,8 +78,28 @@ class ILP_Encoding:
         return constraints
 
     
-    def machine_occupancy_constraint(self):
-        0
+    def machine_occupancy_constraint(self, M = 50):
+        """ left var + left const <=  right const + right const * right var1 +  right var2"""
+        constraints = []
+        for (j,jp,m) in self.ys:
+            tp = f"t_{jp}_{m}"
+            t = f"t_{j}_{m}"
+            y = f"y_{j}_{jp}_{m}"
+
+            JS = self.JobShop
+            Job = JS.get_job(job_id =j)
+            pt = Job.m_p[m]
+            "t_jp_m + p_j_m <= 0 + M * y_j_jp_m, t_j_m"
+
+            constraints.append([tp, pt, 0, M, y, t])
+            """ other way around"""
+            "t_j_m + p_jp_m <= M - M * y_j_jp_m, t_jp_m"
+            Job = JS.get_job(job_id =jp)
+            pt = Job.m_p[m]
+            constraints.append([t, pt, M, -M, y, tp])
+
+        return constraints
+
 
 
        
@@ -96,6 +119,11 @@ def make_ilp_docplex(ILP_vars):
     for (lhs_var, lhs_number, rhs_var) in ILP_vars.process_t_constr:
         model.add_constraint(
             variables[lhs_var] + lhs_number <= variables[rhs_var])
+
+
+    for (lhs_v, lhs_num, rhs_num, rhs_const, rhs_v1, rhs_v2) in ILP_vars.machine_constraint:
+        model.add_constraint(
+            variables[lhs_v] + lhs_num <= rhs_num + rhs_const*variables[rhs_v1] + variables[rhs_v2] )
 
     model.minimize(sum(variables[k] * weight for k, weight in ILP_vars.obj_input.items()) - ILP_vars.objoffset)
 
