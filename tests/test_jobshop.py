@@ -27,7 +27,7 @@ def test_Job():
     assert J.machines_from_m(m_id = 1) == [2]
     assert J.machines_from_m(m_id = 2) == []
 
-    limits = J.time_limits()
+    limits = J.time_limits
     assert limits == {1:(3, 7), 2: (6, 10)}
     assert type(limits) == OrderedDict
 
@@ -78,7 +78,7 @@ def test_Jobs_different_instance():
     assert J.machines_to_m(m_id = 1) == [1]
     assert J.machines_from_m(m_id = 1) == []
 
-    assert J.time_limits() == {1:(3,5)}
+    assert J.time_limits == {1:(3,5)}
 
 
 

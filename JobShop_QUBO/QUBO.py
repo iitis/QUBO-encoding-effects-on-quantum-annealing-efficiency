@@ -27,9 +27,8 @@ class QUBO_Variables():
         k = 0
         for Job in JS.jobs:
             j = Job.id
-            t_lim = Job.time_limits()
             for m in Job.machines:
-                l,u = t_lim[m]
+                l,u = Job.time_limits[m]
                 for t in range(l, u+1):
                         k += 1
                         multiindices[k] = (j,m,t)
@@ -70,31 +69,45 @@ class Implement_QUBO():
         self.inds_sum_same = {}
         self.inds_sum_diff = {}
 
+        self.JS = JS
+
     # TODO think whether JS should be called within the class
-    def sum_constraint(self, JS):
+    def sum_constraint(self):
         """ add sum constraints  and return dict of corresponding multi indices"""
-        for Job in JS.jobs:
+        for Job in self.JS.jobs:
             j = Job.id
-            t_lim = Job.time_limits()
             for m in Job.machines:
-                l,u = t_lim[m]
+                l,u = Job.time_limits[m]
                 # for each job
                 for t in range(l, u+1):
                     for tp in range(l, u+1):
                         k = self.qubo_variables.vars_jmt[(j,m,t)]
                         kp = self.qubo_variables.vars_jmt[(j,m,tp)]
                         if t == tp:
-                            add_to_dict(self.qubo_terms, key = (k, kp), value= - self.psum)
+                            add_to_dict(self.qubo_terms, key = (k, k), value= -self.psum)
                             self.inds_sum_same[(k,kp)] = (j,m,t)
                         else:
                             add_to_dict(self.qubo_terms, key = (k, kp), value= self.psum)
                             self.inds_sum_diff[(k,kp)] = [(j,m,t), (j,m,tp)]
 
-    
+
+
+    def objective(self):
+        """ add objective terms to QUBO """
+        for Job in self.JS.jobs:
+            j= Job.id
+            m = Job.last_machine
+            l,u = Job.time_limits[m]
+            for t in range(l, u+1):
+                k = self.qubo_variables.vars_jmt[(j,m,t)]
+                acctual_weight = Job.weight*(t-l)/(u-l)
+                add_to_dict(self.qubo_terms, key = (k, k), value= acctual_weight)
+                
+
 
     ## tested till there in this class
 
-    def pair_constraint(self, Vars, JS):
+    def pair_constraint(self, Vars):
         """ add pair constraints  and return dict of corresponding multi indices """
         inds_multiinds ={}
         for k, (j,m,t) in Vars.multiindices.items():
@@ -103,8 +116,8 @@ class Implement_QUBO():
                 if m == mp:
                     # different jobs
                     if j != jp:
-                        tau = JS.jobs[j].process_t
-                        taup = JS.jobs[jp].process_t
+                        tau = self.JS.jobs[j].process_t
+                        taup = self.JS.jobs[jp].process_t
                         if t-taup < tp < t+tau:
                             self.add_qubo_term((k, kp), self.ppair)
                             inds_multiinds[(k,kp)] = [(t,m,j), (tp, mp,jp)]
@@ -112,12 +125,6 @@ class Implement_QUBO():
         return inds_multiinds
     
 
-    def objective(self, Vars, P):
-        """ add objective terms to QUBO """
-        for k, (t,m,j) in Vars.multiindices.items():
-            weight = P.jobs[j].priority
-            penalty = weight*self.obj(t + P.jobs[j].process_t - P.jobs[j].release_t)
-            self.add_qubo_term((k, k), penalty)
 
     def make_QUBO(self, Vars, P):
         """ make QUBO, initialize, then add terms of constraints and objective """

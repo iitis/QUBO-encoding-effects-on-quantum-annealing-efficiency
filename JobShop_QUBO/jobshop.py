@@ -35,8 +35,7 @@ class Job:
         return self.machines[i:l]
 
     
-    def time_limits(self):
-        # TODO this may be moved to the initi field to improve efficiency if necessary 
+    def time_lim(self):
         all_processing_time = sum(list(self.m_p.values()))
         t_min = self.release
         t_max = self.due - all_processing_time
@@ -74,6 +73,7 @@ class Job:
 
         if type(self.m_p) != OrderedDict:
             raise ValueError ("machines should be in ordered dict")
+        self.time_limits = self.time_lim()
 
 
 
@@ -112,7 +112,7 @@ class JobShop:
 
         for Job in self.jobs:
             j= Job.id
-            lims_job = Job.time_limits()
+            lims_job = Job.time_limits
             for m in Job.machines:
 
                 t_ranges[(j,m)] = lims_job[m]
