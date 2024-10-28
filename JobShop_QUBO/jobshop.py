@@ -36,6 +36,7 @@ class Job:
 
     
     def time_limits(self):
+        # TODO this may be moved to the initi field to improve efficiency if necessary 
         all_processing_time = sum(list(self.m_p.values()))
         t_min = self.release
         t_max = self.due - all_processing_time
