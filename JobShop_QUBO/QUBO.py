@@ -68,6 +68,7 @@ class Implement_QUBO():
         self.qubo_variables = QUBO_Variables(JS)
         self.inds_sum_same = {}
         self.inds_sum_diff = {}
+        self.inds_pair = {}
 
         self.JS = JS
 
@@ -105,11 +106,37 @@ class Implement_QUBO():
                 
 
 
+    def pair_constraint_process_t(self):
+        """ add pair constraints  and return dict of corresponding multi indices """
+        for Job in self.JS.jobs:
+            j = Job.id
+            for m in Job.machines_but_first:
+                mp = Job.preceeding_machine(m)
+                l,u = Job.time_limits[m]
+                lp,up = Job.time_limits[mp]
+                proc_t = Job.m_p[m]
+
+                for tp in range(lp, up+1):
+                    for t in range(l, tp+proc_t):
+                        k = self.qubo_variables.vars_jmt[(j,m,t)]
+                        kp = self.qubo_variables.vars_jmt[(j,mp,tp)]
+
+                        add_to_dict(self.qubo_terms, key = (k, kp), value = self.ppair)
+                        self.inds_pair[(k,kp)] = [(j,m,t), (j, mp,tp)]
+                        # include symmetric version
+
+                        add_to_dict(self.qubo_terms, key = (kp, k), value = self.ppair)
+                        self.inds_pair[(kp,k)] = [(j,mp,tp), (j, m,t)]
+        
+
     ## tested till there in this class
 
-    def pair_constraint(self, Vars):
+    def pair_constraint_occupancy(self, Vars):
         """ add pair constraints  and return dict of corresponding multi indices """
-        inds_multiinds ={}
+        for Job in self.JS.jobs:
+            j = Job.id
+            for m in Job.machines_but_last:
+                mp = Job.preceeding_machine(m)
         for k, (j,m,t) in Vars.multiindices.items():
             for kp, (jp,mp,tp) in Vars.multiindices.items():
                 # the same machine
@@ -120,10 +147,8 @@ class Implement_QUBO():
                         taup = self.JS.jobs[jp].process_t
                         if t-taup < tp < t+tau:
                             self.add_qubo_term((k, kp), self.ppair)
-                            inds_multiinds[(k,kp)] = [(t,m,j), (tp, mp,jp)]
-        
-        return inds_multiinds
-    
+                            self.inds_pair[(k,kp)] = [(t,m,j), (tp, mp,jp)]
+
 
 
     def make_QUBO(self, Vars, P):

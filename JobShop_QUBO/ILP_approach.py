@@ -68,12 +68,11 @@ class ILP_Encoding:
         constraints = []
         for Job in self.JobShop.jobs:
             j = Job.id
-            m0 = Job.first_machine
-            for m in Job.machines:
-                if m != m0:
-                    mp = Job.preceeding_machine(m)
+            
+            for m in Job.machines_but_first:
+                mp = Job.preceeding_machine(m)
 
-                    constraints.append([f"t_{j}_{m0}", Job.m_p[m] , f"t_{j}_{m}"])
+                constraints.append([f"t_{j}_{mp}", Job.m_p[m] , f"t_{j}_{m}"])
 
         return constraints
 

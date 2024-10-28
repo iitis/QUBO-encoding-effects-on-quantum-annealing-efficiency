@@ -66,7 +66,7 @@ class Job:
         self.weight = weight
         self.machines = self.get_machines_ids()
         self.no_machines = len(self.machines)
-        self.machines_but_last = self.machines[0: self.no_machines-1]
+        self.machines_but_first = self.machines[1: self.no_machines]
 
         self.first_machine = self.get_first_machine()
         self.last_machine = self.get_last_machine()

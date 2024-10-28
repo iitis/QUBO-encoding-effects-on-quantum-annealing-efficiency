@@ -18,7 +18,7 @@ def test_Job():
     assert J.no_machines == 2
     assert J.first_machine == 1
     assert J.last_machine == 2
-    assert J.machines_but_last == [1]
+    assert J.machines_but_first == [2]
 
     assert J.preceeding_machine(2) == 1
     assert J.machines_to_m(m_id = 1) == [1]
@@ -49,7 +49,7 @@ def test_Jobs_different_instance():
     m_p = OrderedDict({1:2, 2:3, 7:1, 3:5, 5:1})
     J = Job(id = 1, m_p=m_p, release=1, due=20, weight=0.5)
     assert J.machines == [1,2,7,3,5]
-    assert J.machines_but_last == [1,2,7,3]
+    assert J.machines_but_first == [2,7,3,5]
 
     assert J.preceeding_machine(5) == 3
     assert J.preceeding_machine(3) == 7
@@ -73,7 +73,7 @@ def test_Jobs_different_instance():
     m_p = OrderedDict({1:2})
     J = Job(id = 1, m_p=m_p, release=1, due=5, weight=0.5)
     assert J.machines == [1]
-    assert J.machines_but_last == []
+    assert J.machines_but_first == []
 
     assert J.machines_to_m(m_id = 1) == [1]
     assert J.machines_from_m(m_id = 1) == []
