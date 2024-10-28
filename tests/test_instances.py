@@ -9,7 +9,7 @@ from JobShop_QUBO import ILP_Encoding, make_ilp_docplex, docplex_sol2_schedule
 def instance_small():
 
     J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=8, weight=0.5)
-    J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=8, weight=0.5)
+    J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=0.5)
 
     JS = JobShop([J1, J2])
     ILP = ILP_Encoding(JS)

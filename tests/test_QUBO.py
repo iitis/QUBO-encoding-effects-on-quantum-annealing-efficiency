@@ -1,0 +1,59 @@
+from collections import OrderedDict
+
+from JobShop_QUBO import Job, JobShop
+
+from JobShop_QUBO import QUBO_Variables
+
+def test_QUBO_variables():
+
+    J2 = Job(id = 2, m_p=OrderedDict({2:2, 3:2}), release=1, due=10, weight=0.5)
+    J3 = Job(id = 3, m_p=OrderedDict({1:1, 3:3}), release=1, due=10, weight=0.5)
+
+    JS = JobShop([J2, J3])
+
+    q = QUBO_Variables(JS)
+    
+    """ k:(j,m,t) """
+    assert q.q_vars == {1: (2, 2, 3), 2: (2, 2, 4), 3: (2, 2, 5), 4: (2, 2, 6), 
+                        5: (2, 2, 7), 6: (2, 2, 8), 7: (2, 3, 5), 8: (2, 3, 6), 
+                        9: (2, 3, 7), 10: (2, 3, 8), 11: (2, 3, 9), 12: (2, 3, 10), 
+                        13: (3, 1, 2), 14: (3, 1, 3), 15: (3, 1, 4), 16: (3, 1, 5), 
+                        17: (3, 1, 6), 18: (3, 1, 7), 19: (3, 3, 5), 20: (3, 3, 6), 
+                        21: (3, 3, 7), 22: (3, 3, 8), 23: (3, 3, 9), 24: (3, 3, 10)}
+    
+    assert q.size == 24
+
+
+    J2 = Job(id = 2, m_p=OrderedDict({2:2, 3:2}), release=1, due=8, weight=0.5)
+    J3 = Job(id = 3, m_p=OrderedDict({1:1, 3:3}), release=1, due=8, weight=0.5)
+
+    JS = JobShop([J2, J3])
+    q = QUBO_Variables(JS)
+
+    """ k:(j,m,t) """
+    assert q.q_vars == {1: (2, 2, 3), 2: (2, 2, 4), 3: (2, 2, 5), 4: (2, 2, 6), 
+                        5: (2, 3, 5), 6: (2, 3, 6), 7: (2, 3, 7), 8: (2, 3, 8), 
+                        9: (3, 1, 2), 10: (3, 1, 3), 11: (3, 1, 4), 12: (3, 1, 5), 
+                        13: (3, 3, 5), 14: (3, 3, 6), 15: (3, 3, 7), 16: (3, 3, 8)}
+
+    
+    assert q.size == 16
+
+    J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=8, weight=0.5)
+    J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=0.5)
+
+    JS = JobShop([J1, J2])
+    q = QUBO_Variables(JS)
+
+    """ k:(j,m,t) """
+
+    print(q.q_vars)
+
+    assert q.q_vars == {1: (1, 1, 3), 2: (1, 1, 4), 3: (1, 1, 5), 4: (1, 1, 6), 5: (1, 2, 5), 
+                        6: (1, 2, 6), 7: (1, 2, 7), 8: (1, 2, 8), 9: (2, 2, 4), 
+                        10: (2, 2, 5), 11: (2, 2, 6), 12: (2, 2, 7)}
+
+    assert q.size == 12
+
+
+
