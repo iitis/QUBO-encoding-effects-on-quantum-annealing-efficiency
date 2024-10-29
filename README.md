@@ -10,6 +10,16 @@ Then encoding idea will be as follows.
 5. Function that solves JobShop on ILP to have the ground state objective, and the ground state solution.
 
 
+
+## to create QUBO please run 
+
+```python3 make_qubos.py --ppair 2 --psum 2 --no_qbits 10
+```
+
+Above parameters with default settings. For now only 10 qbits instance is supported. Qubos are saved in ```./QUBOs``` directory, 
+args are in the file name.
+
+
 ## JobShop definition
 
 
