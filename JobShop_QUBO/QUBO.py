@@ -268,5 +268,7 @@ class Implement_QUBO():
             for t in range(l, u+1):
                 k = self.qubo_variables.vars_jmt[(j,m,t)]
                 # Python numbering
-                objective += Job.weight*(t-l)/(u-l)*x[k-1]    
+                objective += Job.weight*(t-l)/(u-l)*x[k-1]
+
+        assert objective <= self.JS.max_obj  
         return objective

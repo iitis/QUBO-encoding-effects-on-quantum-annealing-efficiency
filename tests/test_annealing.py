@@ -2,8 +2,7 @@ import pytest
 from collections import OrderedDict
 
 from JobShop_QUBO import Job, JobShop
-from JobShop_QUBO import ILP_Encoding, make_ilp_docplex, docplex_sol2_schedule
-from JobShop_QUBO import QUBO_Variables, Implement_QUBO
+from JobShop_QUBO import Implement_QUBO
 from JobShop_QUBO import solve_on_DWave, sort_sols, dict_of_solutions
 
 # set False if no D-Wave leep instaled
@@ -75,19 +74,24 @@ def test_on_simulated_annelaing():
 
         print( [(x['sol'], x["obj"]) for x in xs] )
 
-        x = xs[0]['sol']
-        sched, _ = qubo.qubo_vec2_schedule(x)
-
         assert xs[0]['obj'] == pytest.approx(0.5)
 
-        print(x== [0,1,0,0,1,0,1,0,0,0])
-        print( x==[1,0,0,0,1,0,1,0,0,0])
+         # degeneracy, ground states:
+        x = [1,0,0,0,1,0,1,0,0,0]
+        schedule, _ = qubo.qubo_vec2_schedule(x)
+        assert schedule == {1: {1: (1, 3), 2: (4, 6)}, 2: {2: (2, 4)}}
+        x =[0,1,0,0,1,0,1,0,0,0]
+        schedule, _ = qubo.qubo_vec2_schedule(x)
+        assert schedule == {1: {1: (2, 4), 2: (4, 6)}, 2: {2: (2, 4)}}
+
+        x = xs[0]['sol']
+        sched, _ = qubo.qubo_vec2_schedule(x)
         
-        
-        # degeneracy
         assert sched  in ({1: {1: (1, 3), 2: (4, 6)}, 2: {2: (2, 4)}},
                         {1: {1: (2, 4), 2: (4, 6)}, 2: {2: (2, 4)}}
         )
+
+
 
 
         JS = instance_1()

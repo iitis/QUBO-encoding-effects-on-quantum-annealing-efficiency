@@ -124,6 +124,7 @@ def test_JobShop():
     assert JS.machines_2_jobs(J1, J2) == set([3])
     assert JS.machines_2_jobs(J, J2) == set([1])
     assert JS.get_job(job_id = 2) == J1
+    assert JS.max_obj == 1.5
 
 
 

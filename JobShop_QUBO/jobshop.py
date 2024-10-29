@@ -129,10 +129,16 @@ class JobShop:
             self.obj_vars[(j,m)] = Job.weight / (u-l)
 
             self.objoffset += Job.weight * l / (u-l)
+
+    
+    def maximal_objective(self):
+        max_obj = 0
+        for Job in self.jobs:
+            max_obj += Job.weight
+        return max_obj
+
+
         
-
-
-
     def __init__(self, jobs:list):
 
         self.jobs = jobs
@@ -148,4 +154,5 @@ class JobShop:
         self.obj_vars = {}
         self.objoffset = 0
         self.get_objective_vars()
+        self.max_obj = self.maximal_objective()
 
