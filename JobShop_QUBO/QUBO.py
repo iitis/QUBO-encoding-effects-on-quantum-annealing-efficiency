@@ -90,7 +90,6 @@ class Implement_QUBO():
             sched4plotter[j] = [ms, times]
 
             schedule[j] = jobs
-
         return schedule, sched4plotter
 
 
@@ -106,9 +105,6 @@ class Implement_QUBO():
 
                 # Python numbering
                 x[k-1] = 1
-
-
-
         return x
 
 

@@ -23,7 +23,7 @@ def instance_1():
     return JS
 
 def instance_2():
-
+    # a bit pathological one job 3 has no penalty
     J2 = Job(id = 2, m_p=OrderedDict({2:2, 3:2}), release=1, due=10, weight=0.5)
     J3 = Job(id = 3, m_p=OrderedDict({1:1, 3:3}), release=1, due=10, weight=0.0)
     JS = JobShop([J2, J3])
@@ -148,6 +148,7 @@ def test_QUBO():
     ilp_obj = sol.get_objective_value()
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
 
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
@@ -164,6 +165,7 @@ def test_QUBO():
     ilp_obj = sol.get_objective_value()
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
 
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
@@ -180,6 +182,7 @@ def test_QUBO():
     ilp_obj = sol.get_objective_value()
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
 
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
@@ -196,6 +199,8 @@ def test_QUBO():
     ilp_obj = sol.get_objective_value()
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
+    assert qubo.qubo_variables.size == 24
 
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
@@ -212,6 +217,7 @@ def test_QUBO():
     ilp_obj = sol.get_objective_value()
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
 
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
@@ -228,6 +234,7 @@ def test_QUBO():
     ilp_obj = sol.get_objective_value()
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
 
     x = qubo.schedule_2_x(sched)
     assert sched == {1: {1: (2.0, 6.0), 2: (6.0, 8.0), 3: (8.0, 10.0)}, 2: {1: (0.0, 2.0)}}

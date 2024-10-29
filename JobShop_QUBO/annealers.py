@@ -1,6 +1,8 @@
 import itertools
 import neal
 import dimod
+from operator import itemgetter
+from JobShop_QUBO import QUBO_Variables, Implement_QUBO
 
 # these are D-Wave modules
 
@@ -67,13 +69,49 @@ def solve_on_DWave(Q:dict, no_runs:int, real:bool = False, hyb:bool = False, at:
     return sampleset
 
 
-def analyze_sol(Vars, P, Q:dict, sol):
-    """ compute n.o. broken constraints and the objective """
-    Vars.set_values(sol)
+def dict_of_solutions(qubo, solutions, print_not_feasible:bool = False):
+    """ checks feasibility and return the dict of feasible sols """
+    sols = []
 
-    broken_pairs = Q.chech_feasibility_pair_constraint(Vars, P)
-    broken_sum = Q.check_feasibility_sum_constraint(Vars, P)
+    if len(solutions[0]) == 4:
+        for (sol, energy, occ, chain_strength) in solutions:
 
-    obj = Q.compute_objective(Vars, P)
+            broken_pairs = qubo.nonfeasible_pair_constraints(sol)
+            broken_sum = qubo.nonfeasible_sum_constraint(sol)
+            obj = qubo.compute_objective(sol)
+            our_sol = {"broken_constr": broken_pairs+broken_sum, "obj": obj, "sol": sol}
+            sols.append(our_sol)
 
-    return broken_pairs, broken_sum, obj
+            if print_not_feasible:
+                print("...............")
+                print("broken pair constraint", broken_pairs)
+                print("broken sum constraint", broken_sum)
+
+    elif len(solutions[0]) == 3:
+
+        for (sol, energy, occ) in solutions:
+
+            broken_pairs = qubo.nonfeasible_pair_constraints(sol)
+            broken_sum = qubo.nonfeasible_sum_constraint(sol)
+            obj = qubo.compute_objective(sol)
+
+            our_sol = {"broken_constr": broken_pairs+broken_sum, "obj": obj, "sol": sol}
+            sols.append(our_sol)
+
+            if print_not_feasible:
+                print("...............")
+                print("broken pair constraint", broken_pairs)
+                print("broken sum constraint", broken_sum)
+
+    return sols
+
+
+
+def sort_sols(sols):
+    """ filter out non-feasible solutions and sort solutions according to objective """
+    Y = list( filter(lambda x : x["broken_constr"] == 0, sols) )
+    newlist = sorted(Y, key=itemgetter('obj'))
+
+    print(len(newlist), "feasible solutions out of", len(sols))
+
+    return newlist

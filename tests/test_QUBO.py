@@ -62,7 +62,6 @@ def test_QUBO_variables():
 
     """ k:(j,m,t) """
 
-    print(q.vars)
 
     assert q.vars == {1: (1, 1, 3), 2: (1, 1, 4), 3: (1, 1, 5), 4: (1, 1, 6), 5: (1, 2, 5), 
                         6: (1, 2, 6), 7: (1, 2, 7), 8: (1, 2, 8), 9: (2, 2, 4), 
@@ -281,7 +280,6 @@ def test_objective():
 
 
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
-
     qubo.make_QUBO()
 
     # Job 1 first
