@@ -77,6 +77,7 @@ def test_QUBO_variables():
 
 
 
+
 def test_QUBO_implmenetation():
 
     J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=7, weight=1.0)
@@ -97,7 +98,16 @@ def test_QUBO_implmenetation():
                                         4: (1, 2, 5), 5: (1, 2, 6), 6: (1, 2, 7),
                                           7: (2, 2, 4), 8: (2, 2, 5), 9: (2, 2, 6),
                                           10: (2, 2, 7)}
+    
+    x = [1,0,0,1,0,0,0,0,0,1]
+    schedule, _ = qubo.qubo_vec2_schedule(x)
 
+    assert schedule == {1: {1: (1, 3), 2: (3, 5)}, 2: {2: (5, 7)}}
+
+    d = {1: {1: (1, 3), 2: (3, 5)}, 2: {2: (5, 7)}}
+
+    x1 = qubo.schedule_2_x(d)
+    assert x1 == x
 
     qubo.sum_constraint()
 
@@ -141,6 +151,8 @@ def test_QUBO_implmenetation():
                               (10, 7): 2, (10, 8): 2, (10, 9): 2, (10, 10): -2+1}
 
 
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+
     qubo.pair_constraint_process_t()
 
 
@@ -151,17 +163,154 @@ def test_QUBO_implmenetation():
     
     
 
-    assert qubo.qubo_terms == {(1, 1): -2, (1, 2): 2, (1, 3): 2, (2, 1): 2, (2, 2): -2, (2, 3): 2, 
-                              (3, 1): 2, (3, 2): 2, (3, 3): -2, (4, 4): -2+0, (4, 5): 2, (4, 6): 2, 
-                              (5, 4): 2, (5, 5): -2+0.5, (5, 6): 2, (6, 4): 2, (6, 5): 2, (6, 6): -2+1, 
-                              (7, 7): -2, (7, 8): 2, (7, 9): 2, (7, 10): 2, (8, 7): 2, (8, 8): -2+1/3,
-                              (8, 9): 2, (8, 10): 2, (9, 7): 2, (9, 8): 2, (9, 9): -2+2/3, (9, 10): 2,
-                              (10, 7): 2, (10, 8): 2, (10, 9): 2, (10, 10): -2+1, 
-                              (4,2): 2, (2, 4): 2, (4, 3): 2, (3, 4): 2, (5, 3): 2, (3, 5): 2}
+    assert qubo.qubo_terms == {(4,2): 2, (2, 4): 2, (4, 3): 2, (3, 4): 2, (5, 3): 2, (3, 5): 2}
+
+
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+
+    qubo.pair_constraint_occupancy()
+
+
+    assert qubo.inds_pair == {(4, 7): [(1, 2, 5), (2, 2, 4)], (4, 8): [(1, 2, 5), (2, 2, 5)], 
+                              (4, 9): [(1, 2, 5), (2, 2, 6)], (5, 8): [(1, 2, 6), (2, 2, 5)], 
+                              (5, 9): [(1, 2, 6), (2, 2, 6)], (5, 10): [(1, 2, 6), (2, 2, 7)], 
+                              (6, 9): [(1, 2, 7), (2, 2, 6)], (6, 10): [(1, 2, 7), (2, 2, 7)], 
+                              (7, 4): [(2, 2, 4), (1, 2, 5)], (8, 4): [(2, 2, 5), (1, 2, 5)], 
+                              (8, 5): [(2, 2, 5), (1, 2, 6)], (9, 4): [(2, 2, 6), (1, 2, 5)], 
+                              (9, 5): [(2, 2, 6), (1, 2, 6)], (9, 6): [(2, 2, 6), (1, 2, 7)], 
+                              (10, 5): [(2, 2, 7), (1, 2, 6)], (10, 6): [(2, 2, 7), (1, 2, 7)]}
+
+
+    assert qubo.qubo_terms == {(4, 7): 2, (4, 8): 2, (4, 9): 2, (5, 8): 2, (5, 9): 2, (5, 10): 2, 
+                               (6, 9): 2, (6, 10): 2, (7, 4): 2, (8, 4): 2, (8, 5): 2, (9, 4): 2, 
+                               (9, 5): 2, (9, 6): 2, (10, 5): 2, (10, 6): 2}
 
 
 
 
+def test_pair_constraints_further():
+    """ degenerated instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:2}), release=1, due=7, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:4}), release=1, due=7, weight=1.0)
+
+    JS = JobShop([J1, J2])
+
+
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+
+    assert qubo.qubo_variables.vars == {1: (1, 1, 3), 2: (1, 1, 4), 3: (1, 1, 5), 4: (1, 1, 6), 
+                                        5: (1, 1, 7), 6: (2, 1, 5), 7: (2, 1, 6), 8: (2, 1, 7)}
     
+
+    qubo.pair_constraint_occupancy()
+
+
+    assert qubo.inds_pair == {(1, 6): [(1, 1, 3), (2, 1, 5)], (1, 7): [(1, 1, 3), (2, 1, 6)], 
+                              (2, 6): [(1, 1, 4), (2, 1, 5)], (2, 7): [(1, 1, 4), (2, 1, 6)], 
+                              (2, 8): [(1, 1, 4), (2, 1, 7)], (3, 6): [(1, 1, 5), (2, 1, 5)], 
+                              (3, 7): [(1, 1, 5), (2, 1, 6)], (3, 8): [(1, 1, 5), (2, 1, 7)], 
+                              (4, 6): [(1, 1, 6), (2, 1, 5)], (4, 7): [(1, 1, 6), (2, 1, 6)], 
+                              (4, 8): [(1, 1, 6), (2, 1, 7)], (5, 7): [(1, 1, 7), (2, 1, 6)], 
+                              (5, 8): [(1, 1, 7), (2, 1, 7)], (6, 1): [(2, 1, 5), (1, 1, 3)], 
+                              (6, 2): [(2, 1, 5), (1, 1, 4)], (6, 3): [(2, 1, 5), (1, 1, 5)], 
+                              (6, 4): [(2, 1, 5), (1, 1, 6)], (7, 1): [(2, 1, 6), (1, 1, 3)], 
+                              (7, 2): [(2, 1, 6), (1, 1, 4)], (7, 3): [(2, 1, 6), (1, 1, 5)], 
+                              (7, 4): [(2, 1, 6), (1, 1, 6)], (7, 5): [(2, 1, 6), (1, 1, 7)], 
+                              (8, 2): [(2, 1, 7), (1, 1, 4)], (8, 3): [(2, 1, 7), (1, 1, 5)], 
+                              (8, 4): [(2, 1, 7), (1, 1, 6)], (8, 5): [(2, 1, 7), (1, 1, 7)]}
+
+
+def test_check_solution():
+
+    """ degenerated instance """
+
+    J1 = Job(id = 1, m_p=OrderedDict({1:2}), release=1, due=7, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:4}), release=1, due=7, weight=1.0)
+
+    JS = JobShop([J1, J2])
+
+
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+
+    qubo.make_QUBO()
+
+    # Job 1 first
+    x = [1,0,0,0,0,0,0,1]
+    assert qubo.nonfeasible_pair_constraints(x) == 0
+    assert qubo.compute_objective(x) == 1.0
+
+    x = [0,1,0,0,0,0,0,1]
+    assert qubo.nonfeasible_pair_constraints(x) == 1
+
+    x = [0,0,1,0,0,0,0,1]
+    assert qubo.nonfeasible_pair_constraints(x) == 1
+
+    # Job 2 first
+    x = [0,0,0,0,1,1,0,0]
+    assert qubo.nonfeasible_pair_constraints(x) == 0
+    assert qubo.compute_objective(x) == 1.0
+
+    x = [0,0,0,0,1,0,1,0]
+    assert qubo.nonfeasible_pair_constraints(x) == 1
+
+    x = [0,0,0,0,1,0,0,1]
+    assert qubo.nonfeasible_pair_constraints(x) == 1
+
+
+    # sum constraint
+    x = [1,0,0,0,0,0,0,1]
+    assert qubo.nonfeasible_sum_constraint(x) == 0
+
+    x = [1,1,0,0,0,0,0,1]
+    assert qubo.nonfeasible_sum_constraint(x) == 1
+
+    x = [0,0,0,0,0,0,0,1]
+    assert qubo.nonfeasible_sum_constraint(x) == 1
+
+    x = [0,0,0,0,0,0,1,1]
+    assert qubo.nonfeasible_sum_constraint(x) == 2
+
+def test_objective():
+
+    """  non degenerated instance """
+
+    J1 = Job(id = 1, m_p=OrderedDict({1:2}), release=1, due=7, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:4}), release=1, due=7, weight=0.5)
+
+    JS = JobShop([J1, J2])
+
+
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+
+    qubo.make_QUBO()
+
+    # Job 1 first
+    x = [1,0,0,0,0,0,0,1]
+    assert qubo.nonfeasible_pair_constraints(x) == 0
+    assert qubo.compute_objective(x) == 0.5
+
+    schedule, _ = qubo.qubo_vec2_schedule(x)
+
+    assert schedule == {1: {1: (1, 3)}, 2: {1: (3, 7)}}
+
+    x1 = qubo.schedule_2_x({1: {1: (1, 3)}, 2: {1: (3, 7)}})
+    assert x1 == x
+
+
+    # Job 2 first
+    x = [0,0,0,0,1,1,0,0]
+    assert qubo.nonfeasible_pair_constraints(x) == 0
+    assert qubo.compute_objective(x) == 1.0
+
+    schedule, _ = qubo.qubo_vec2_schedule(x)
+    assert schedule == {1: {1: (5, 7)}, 2: {1: (1, 5)}}
+    
+    x1 = qubo.schedule_2_x({1: {1: (5, 7)}, 2: {1: (1, 5)}})
+    assert x1 == x
+
+
+
+
+
 
 

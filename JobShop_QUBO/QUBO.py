@@ -1,4 +1,4 @@
-
+import numpy as np
 
 # QUBO variables
 
@@ -34,16 +34,6 @@ class QUBO_Variables():
                         multiindices[k] = (j,m,t)
         return multiindices
     
-    # tested in the class till there
-
-    def set_values(self, vals):
-        """ set values of QUBO_var, given list or array in vals """
-        assert len(vals) == self.size
-        for i, v in enumerate(vals):
-            assert v in [0,1]
-            self.vars[i+1].value = v  # renumbering, Python is form 0
-                        
-        
 
 
 def add_to_dict(d:dict, key, value):
@@ -69,10 +59,63 @@ class Implement_QUBO():
         self.inds_sum_same = {}
         self.inds_sum_diff = {}
         self.inds_pair = {}
-
         self.JS = JS
 
-    # TODO think whether JS should be called within the class
+    
+    def qubo_vec2_schedule(self, x):
+        if len(x) != self.qubo_variables.size:
+            raise ValueError (f"sol length {len(x)} not equal to n.o. QUBO vars {self.qubo_variables.size}")
+
+        schedule = {}
+        sched4plotter = {}
+
+        for Job in self.JS.jobs:
+            j = Job.id
+            jobs = {}
+            ms = []
+            times = []
+            for m in Job.machines:
+                ms.append(m)
+                ms.append(m)
+                l,u = Job.time_limits[m]
+                for t in range(l, u+1):
+                    k = self.qubo_variables.vars_jmt[(j,m,t)]
+                    if x[k-1] == 1:
+
+                        times.append(t - Job.m_p[m])
+                        times.append(t)
+
+                        jobs[m] = (t - Job.m_p[m], t)
+            
+            sched4plotter[j] = [ms, times]
+
+            schedule[j] = jobs
+
+        return schedule, sched4plotter
+
+
+
+    def schedule_2_x(self, sched:dict):
+
+        x = [0 for _ in range(self.qubo_variables.size)]
+
+        for j, value in sched.items():
+            for m, (t_start, t) in value.items():
+
+                k = self.qubo_variables.vars_jmt[(j,m,t)]
+
+                # Python numbering
+                x[k-1] = 1
+
+
+
+        return x
+
+
+
+
+
+
     def sum_constraint(self):
         """ add sum constraints  and return dict of corresponding multi indices"""
         for Job in self.JS.jobs:
@@ -107,7 +150,7 @@ class Implement_QUBO():
 
 
     def pair_constraint_process_t(self):
-        """ add pair constraints  and return dict of corresponding multi indices """
+        """ add pair constraints  for minimal processing time constraint """
         for Job in self.JS.jobs:
             j = Job.id
             for m in Job.machines_but_first:
@@ -117,86 +160,117 @@ class Implement_QUBO():
                 proc_t = Job.m_p[m]
 
                 for tp in range(lp, up+1):
-                    for t in range(l, tp+proc_t):
+                    lim = np.min([tp+proc_t, u+1])
+                    for t in range(l, lim):
                         k = self.qubo_variables.vars_jmt[(j,m,t)]
                         kp = self.qubo_variables.vars_jmt[(j,mp,tp)]
 
                         add_to_dict(self.qubo_terms, key = (k, kp), value = self.ppair)
+
+                        assert (k,kp) not in self.inds_pair
                         self.inds_pair[(k,kp)] = [(j,m,t), (j, mp,tp)]
                         # include symmetric version
 
                         add_to_dict(self.qubo_terms, key = (kp, k), value = self.ppair)
+
+                        assert (kp,k) not in self.inds_pair
                         self.inds_pair[(kp,k)] = [(j,mp,tp), (j, m,t)]
         
 
     ## tested till there in this class
 
-    def pair_constraint_occupancy(self, Vars):
-        """ add pair constraints  and return dict of corresponding multi indices """
+    def pair_constraint_occupancy(self):
+        """ add pair constraints  for machine occupancy constraint """
         for Job in self.JS.jobs:
-            j = Job.id
-            for m in Job.machines_but_last:
-                mp = Job.preceeding_machine(m)
-        for k, (j,m,t) in Vars.multiindices.items():
-            for kp, (jp,mp,tp) in Vars.multiindices.items():
-                # the same machine
-                if m == mp:
-                    # different jobs
-                    if j != jp:
-                        tau = self.JS.jobs[j].process_t
-                        taup = self.JS.jobs[jp].process_t
-                        if t-taup < tp < t+tau:
-                            self.add_qubo_term((k, kp), self.ppair)
-                            self.inds_pair[(k,kp)] = [(t,m,j), (tp, mp,jp)]
+            for Job_p in self.JS.jobs:
+                j = Job.id
+                jp = Job_p.id
+                if j != jp:
+                    for m in self.JS.machines_2_jobs(Job, Job_p):
+                        l,u = Job.time_limits[m]
+                        lp,up = Job_p.time_limits[m]
+                        proc_t = Job.m_p[m]
+                        proc_tp = Job_p.m_p[m]
+                        for t in range(l, u+ 1):
+                            lim_d = np.max([lp, t - proc_t + 1])
+                            lim_u = np.min([t  + proc_tp, up + 1])
+                            for tp in range(lim_d, lim_u):
+
+                                k = self.qubo_variables.vars_jmt[(j,m,t)]
+                                kp = self.qubo_variables.vars_jmt[(jp,m,tp)]
+
+                                add_to_dict(self.qubo_terms, key = (k, kp), value = self.ppair)
+                                assert (k,kp) not in self.inds_pair
+                                self.inds_pair[(k,kp)] = [(j,m,t), (jp, m, tp)]
 
 
 
-    def make_QUBO(self, Vars, P):
-        """ make QUBO, initialize, then add terms of constraints and objective """
-        self.sum_constraint(Vars)
-        self.pair_constraint(Vars, P)
-        self.objective(Vars, P)
+    def make_QUBO(self):
+        """ make QUBO, add terms of constraints and objective """
+        self.sum_constraint()
+        self.pair_constraint_process_t()
+        self.pair_constraint_occupancy()
+        self.objective()
 
 
-    # These functions are for the analysis of solutions
 
-    def chech_feasibility_pair_constraint(self, Vars, P) -> int:
+    def nonfeasible_pair_constraints(self, x) -> int:
         """ 
         returns an int, number of broken pair constraints of the solution in Vars and jobs in P
         returns 0 if no pair constraints are broken
         """
+        if len(x) != self.qubo_variables.size:
+            raise ValueError (f"sol length {len(x)} not equal to n.o. QUBO vars {self.qubo_variables.size}")
         broken_constraints = 0
-        for (k,kp) in self.pair_constraint(Vars, P):
-            if Vars.vars[k].value == Vars.vars[kp].value == 1:
+        for (k,kp) in self.inds_pair:
+            # phyton numbering
+            if x[k-1] == x[kp-1] == 1:
                 broken_constraints += 1
 
         # Each constraint is counted twice due to symmetry
         return broken_constraints//2
     
 
-    def check_feasibility_sum_constraint(self, Vars, P) -> int:
+    # These functions are for the analysis of solutions
+
+    def nonfeasible_sum_constraint(self, x) -> int:
         """
-        returns an int, number of broken sum constraints of the solution in Vars and jobs in P
-        returns 0 if no sum constraints are broken
+        returns an int, number of broken sum constraints of the solution 
         """
+        if len(x) != self.qubo_variables.size:
+            raise ValueError (f"sol length {len(x)} not equal to n.o. QUBO vars {self.qubo_variables.size}")
+    
         broken_constraints = 0
-        for j_check in P.jobs:
-            starts = 0
-            for k, (j,m,t) in Vars.multiindices.items():
-                if j == j_check:
-                    starts += Vars.vars[k].value
-            if starts != 1:
-                broken_constraints += 1
+        for Job in self.JS.jobs:
+            j = Job.id
+            for m in Job.machines:
+                l,u = Job.time_limits[m]
+                count = 0
+                for t in range(l, u+1):
+                    k = self.qubo_variables.vars_jmt[(j,m,t)]
+                    # Python indexing
+                    count += x[k-1]
+                
+                broken_constraints += np.abs(count - 1)
+
         return broken_constraints
 
 
-    def compute_objective(self, Vars, P) -> float:
+    def compute_objective(self, x) -> float:
         """
         returns objective of the solution in Vars and jobs in P
         """
+        if len(x) != self.qubo_variables.size:
+            raise ValueError (f"sol length {len(x)} not equal to n.o. QUBO vars {self.qubo_variables.size}")
+    
         objective = 0
-        for k, (j,m,t) in Vars.multiindices.items():
-            obj = Vars.vars[k].value * self.obj(t + P.jobs[j].process_t - P.jobs[j].release_t)
-            obj = obj * P.jobs[j].priority
-            objective += obj    
+
+        for Job in self.JS.jobs:
+            j= Job.id
+            m = Job.last_machine
+            l,u = Job.time_limits[m]
+            for t in range(l, u+1):
+                k = self.qubo_variables.vars_jmt[(j,m,t)]
+                # Python numbering
+                objective += Job.weight*(t-l)/(u-l)*x[k-1]    
         return objective

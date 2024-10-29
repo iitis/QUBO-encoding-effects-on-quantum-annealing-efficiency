@@ -121,8 +121,8 @@ def test_JobShop():
     assert JS.job_ids == [1,2,3]
     assert JS.no_jobs == 3
 
-    assert JS.machines_2_jobs(job1_id = 2, job2_id = 3) == set([3])
-    assert JS.machines_2_jobs(job1_id = 1, job2_id = 3) == set([1])
+    assert JS.machines_2_jobs(J1, J2) == set([3])
+    assert JS.machines_2_jobs(J, J2) == set([1])
     assert JS.get_job(job_id = 2) == J1
 
 

@@ -100,10 +100,8 @@ class JobShop:
         raise ValueError (f"no job with id {job_id}")
 
     
-    def machines_2_jobs(self, job1_id, job2_id) -> set:
-        job1 = self.get_job(job1_id)
-        job2 = self.get_job(job2_id)
-        return( set.intersection(set(job1.machines), set(job2.machines)) )
+    def machines_2_jobs(self, Job1, Job2) -> set:
+        return( set.intersection(set(Job1.machines), set(Job2.machines)) )
 
 
     

@@ -16,10 +16,12 @@ class ILP_Encoding:
         jobs_machines = []
         lower = {}
         upper = {}
-        for j1 in JobShop.job_ids:
-            for j2 in JobShop.job_ids:
+        for Job1 in JobShop.jobs:
+            for Job2 in JobShop.jobs:
+                j1 = Job1.id
+                j2 = Job2.id
                 if j1 < j2:
-                    for m in JobShop.machines_2_jobs(job1_id = j1, job2_id = j2):
+                    for m in JobShop.machines_2_jobs(Job1, Job2):
                         var_id = f"y_{j1}_{j2}_{m}"
                         lower[var_id] = 0
                         upper[var_id] = 1
