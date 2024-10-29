@@ -56,7 +56,12 @@ def instance_5():
     ILP = ILP_Encoding(JS)
     return ILP
 
-
+def instance_6():
+    J1 = Job(id = 1, m_p=OrderedDict({1:4, 2:2, 3:2}), release=1, due=10, weight=0.5)
+    J2 = Job(id = 2, m_p=OrderedDict({1:2}), release=0, due=10, weight=0.5)
+    JS = JobShop([J1, J2])
+    ILP = ILP_Encoding(JS)
+    return ILP
 
 
 
@@ -113,5 +118,14 @@ def test_instances_ILP():
 
     assert sched == {1: {1: (0.0, 2.0), 2: (3.0, 5.0)}, 2: {2: (1.0, 3.0), 1: (3.0, 5.0)}}
     assert sol.get_objective_value() == pytest.approx(0.083333333333333333)
+
+
+    ILP = instance_6()
+    model = make_ilp_docplex(ILP)
+    sol = model.solve()
+    sched, _ = docplex_sol2_schedule(model, sol, ILP)
+
+    assert sched == {1: {1: (2.0, 6.0), 2: (6.0, 8.0) , 3: (8.0, 10.0)}, 2: {1: (0.0, 2.0)}}
+    assert sol.get_objective_value() == pytest.approx(0.2)
 
 
