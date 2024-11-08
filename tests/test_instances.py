@@ -6,7 +6,98 @@ from JobShop_QUBO import ILP_Encoding, make_ilp_docplex, docplex_sol2_schedule
 from JobShop_QUBO import QUBO_Variables, Implement_QUBO
 
 
-def instance_small():
+# smallest instances
+
+def instance_4q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+def instance_5q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=4, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+def instance_6q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+def instance_8q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1, 3:1}), release=1, due=4, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+
+
+
+def test_smallest_instances_ILP():
+
+    JS = instance_4q()
+    ILP = ILP_Encoding(JS)
+
+    model = make_ilp_docplex(ILP)
+    sol = model.solve()
+    sched, _ = docplex_sol2_schedule(model, sol, ILP)
+
+    assert sched == {1: {1: (1, 2)}, 2: {1: (2, 3)}}
+
+    assert sol.get_objective_value() == pytest.approx(0.5)
+
+
+    JS = instance_5q()
+    ILP = ILP_Encoding(JS)
+
+    model = make_ilp_docplex(ILP)
+    sol = model.solve()
+    sched, _ = docplex_sol2_schedule(model, sol, ILP)
+
+    assert sched == {1: {1: (1, 2)}, 2: {1: (2, 3)}}
+
+    assert sol.get_objective_value() == pytest.approx(0.25)
+
+
+    JS = instance_6q()
+    ILP = ILP_Encoding(JS)
+
+    model = make_ilp_docplex(ILP)
+    sol = model.solve()
+    sched, _ = docplex_sol2_schedule(model, sol, ILP)
+
+    assert sched == {1: {1: (1, 2), 2:(2,3)}, 2: {1: (2, 3)}}
+
+    assert sol.get_objective_value() == pytest.approx(0.5)
+
+
+    JS = instance_8q()
+    ILP = ILP_Encoding(JS)
+
+    model = make_ilp_docplex(ILP)
+    sol = model.solve()
+    sched, _ = docplex_sol2_schedule(model, sol, ILP)
+
+    assert sched == {1: {1: (1, 2), 2: (2,3)}, 2: {1: (2, 3), 3:(3,4)}}
+
+    assert sol.get_objective_value() == pytest.approx(0.5)
+
+
+
+# larger instances
+
+
+def instance_0():
 
     J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=7, weight=1.0)
     J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=1.0)
@@ -60,7 +151,7 @@ def instance_6():
 
 def test_instances_ILP():
 
-    JS = instance_small()
+    JS = instance_0()
     ILP = ILP_Encoding(JS)
 
     model = make_ilp_docplex(ILP)

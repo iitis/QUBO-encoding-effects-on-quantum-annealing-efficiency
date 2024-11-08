@@ -6,17 +6,70 @@ from JobShop_QUBO import Implement_QUBO
 from collections import OrderedDict
 
 
-def instance_small():
+def instance_4q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
+
+    JS = JobShop([J1, J2])
+
+    scheds = [{1: {1: (1, 2)}, 2: {1: (2, 3)}}]
+
+    ground_obj = 0.5
+    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
+
+def instance_5q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=4, weight=0.5)
+
+    JS = JobShop([J1, J2])
+
+    scheds = [{1: {1: (1, 2)}, 2: {1: (2, 3)}}]
+
+    ground_obj = 0.25
+    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
+
+
+def instance_6q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
+
+    JS = JobShop([J1, J2])
+
+    scheds = [{1: {1: (1, 2), 2:(2,3)}, 2: {1: (2, 3)}}]
+
+    ground_obj = 0.5
+    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
+
+
+def instance_8q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1, 3:1}), release=1, due=4, weight=0.5)
+
+    JS = JobShop([J1, J2])
+
+    scheds = [{1: {1: (1, 2), 2: (2,3)}, 2: {1: (2, 3), 3:(3,4)}}]
+
+    ground_obj = 0.5
+    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
+
+
+def instance_10q():
     """ 10 q-bits instance """
     J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=7, weight=1.0)
     J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=1.0)
 
     JS = JobShop([J1, J2])
 
-    ground_states = ([1,0,0,0,1,0,1,0,0,0], [0,1,0,0,1,0,1,0,0,0])
+    scheds = [{1: {1: (1, 3), 2: (4, 6)}, 2: {2: (2, 4)}},
+                        {1: {1: (2, 4), 2: (4, 6)}, 2: {2: (2, 4)}}
+    ]
 
     ground_obj = 0.5
-    return {"js_problem":JS, "ground_states": ground_states, "ground_obj": ground_obj}
+    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
 
 
 def create_QUBO_dict(args, instance):
@@ -27,16 +80,23 @@ def create_QUBO_dict(args, instance):
         qubo.make_QUBO()
         assert qubo.qubo_variables.size == args.no_qbits
 
+        ground_states = []
         # check the solution given
-        for x in instance["ground_states"]:
-            assert qubo.compute_objective(x) == instance["ground_obj"]
+        for sched in instance["ground_scheds"]:
+            x = qubo.schedule_2_x(sched)
+            ground_states.append(x)
+
             # check feasibility
             assert qubo.nonfeasible_pair_constraints(x) == 0
             assert qubo.nonfeasible_sum_constraint(x) == 0
+            # check objective
+            print("objective = ", qubo.compute_objective(x))
+            assert qubo.compute_objective(x) == instance["ground_obj"]
+
 
         Q = qubo.qubo_terms
 
-        return {"qubo": Q, "ground_states": instance["ground_states"], "ground_obj": instance["ground_obj"]}
+        return {"qubo": Q, "ground_states": ground_states, "ground_obj": instance["ground_obj"]}
 
 
 if __name__ == "__main__":
@@ -70,10 +130,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # such QUBO sizes are supported
-    assert args.no_qbits in [10]
+    assert args.no_qbits in [4, 5, 6, 8, 10]
+
+    if args.no_qbits == 4:
+        instance = instance_4q()
+
+    if args.no_qbits == 5:
+        instance = instance_5q()
+
+    if args.no_qbits == 6:
+        instance = instance_6q()
+
+    if args.no_qbits == 8:
+        instance = instance_8q()
         
     if args.no_qbits == 10:
-        instance = instance_small()
+        instance = instance_10q()
          
     d = create_QUBO_dict(args, instance)
     JS = instance["js_problem"]

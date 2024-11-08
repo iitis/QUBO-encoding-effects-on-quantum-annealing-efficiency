@@ -8,7 +8,113 @@ from JobShop_QUBO import solve_on_DWave, sort_sols, dict_of_solutions
 # set False if no D-Wave leep instaled
 test_on_annealer = True
 
-def instance_small():
+# test smallest instances
+
+# smallest instances
+
+def instance_4q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+def instance_5q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=4, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+def instance_6q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+def instance_8q():
+    """ 4 q-bits instance """
+    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
+    J2 = Job(id = 2, m_p=OrderedDict({1:1, 3:1}), release=1, due=4, weight=0.5)
+
+    return JobShop([J1, J2])
+
+
+
+def test_smallest_instances_simulated_annelaing():
+    if test_on_annealer:
+        JS = instance_4q()
+        qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=10, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+        xs = sort_sols(d)
+
+        assert xs[0]['obj'] == pytest.approx(0.5)
+        x = xs[0]['sol']
+        sched, _ = qubo.qubo_vec2_schedule(x)
+        
+        assert sched == {1: {1: (1, 2)}, 2: {1: (2, 3)}}
+
+
+        JS = instance_5q()
+        qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=10, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+        xs = sort_sols(d)
+
+        assert xs[0]['obj'] == pytest.approx(0.25)
+        x = xs[0]['sol']
+        sched, _ = qubo.qubo_vec2_schedule(x)
+        
+        assert sched == {1: {1: (1, 2)}, 2: {1: (2, 3)}}
+
+
+        JS = instance_6q()
+        qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=10, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+        xs = sort_sols(d)
+
+        assert xs[0]['obj'] == pytest.approx(0.5)
+        x = xs[0]['sol']
+        sched, _ = qubo.qubo_vec2_schedule(x)
+        
+        assert sched == {1: {1: (1, 2), 2:(2,3)}, 2: {1: (2, 3)}}
+
+
+        JS = instance_8q()
+        qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=10, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+        xs = sort_sols(d)
+
+        assert xs[0]['obj'] == pytest.approx(0.5)
+        x = xs[0]['sol']
+        sched, _ = qubo.qubo_vec2_schedule(x)
+        
+        assert sched == {1: {1: (1, 2), 2: (2,3)}, 2: {1: (2, 3), 3:(3,4)}}
+
+
+
+# test a bit larger instances
+
+def instance_0():
 
     J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=7, weight=1.0)
     J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=1.0)
@@ -63,7 +169,7 @@ def instance_6():
 
 def test_on_simulated_annelaing():
     if test_on_annealer:
-        JS = instance_small()
+        JS = instance_0()
         qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
         qubo.make_QUBO()
 

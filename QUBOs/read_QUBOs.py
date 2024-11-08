@@ -1,8 +1,12 @@
 """ reads json file with QUBOs - 1 train """
 import pickle
 
-# add file name
-file_q = 'instance_qbits10_ppair2.0_psum2.0.pkl'
+
+no_qbits = 4
+ppair = 2.0
+psum = 2.0
+
+file_q = f'instance_qbits{no_qbits}_ppair{ppair}_psum{psum}.pkl'
 
 
 with open(file_q, 'rb') as fp:
