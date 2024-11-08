@@ -1,4 +1,4 @@
-# Overview
+# QUBO for JobShop
 
 Then encoding idea will be as follows.
 
