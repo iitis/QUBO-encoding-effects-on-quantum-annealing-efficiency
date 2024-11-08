@@ -17,19 +17,11 @@ Then encoding idea will be as follows.
 python make_qubos.py --ppair 2 --psum 2 --no_qbits 10
 ```
 
-Above parameters with default settings. QUBOSs are saved in ```./QUBOs``` directory, 
+Above parameters with default settings. QUBO sizes (```--no_qbits```) of 4,5,6,8,10 qbits are supported.
+
+
+QUBOSs are saved in ```./QUBOs``` directory, 
 args are in the file name.
 
-QUBO sizes (```--no_qbits```) of 4,5,6,8,10 qbits are supported.
 
 
-## JobShop definition
-
-
-## QUBO creation
-
-
-## Quantum/simulated annealing
-
-
-## ILP solution 
