@@ -20,8 +20,12 @@ python make_qubos.py --ppair 2 --psum 2 --no_qbits 10
 Above parameters with default settings. QUBO sizes (```--no_qbits```) of 4,5,6,8,10 qbits are supported.
 
 
-QUBOSs are saved in ```./QUBOs``` directory, 
-args are in the file name.
+QUBOs are saved in '''./QUBOs''' directory, as '''.pkl''' file.
+Args are in the file name. Therein use '''read_QUBOs.py''' to read QUBOs. QUBos are stored in the dict with keys:
+-- '''qubo''' - symmetric Q matrix in the form of dict,
+-- '''ground_states''' vector of the ground state vector (or vectors if there is degeneration),
+-- '''ground_obj''' - ground state objective.
+
 
 
 
