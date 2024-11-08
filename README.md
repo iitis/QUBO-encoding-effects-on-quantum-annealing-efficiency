@@ -22,9 +22,9 @@ Above parameters with default settings. QUBO sizes (```--no_qbits```) of 4,5,6,8
 
 QUBOs are saved in '''./QUBOs''' directory, as '''.pkl''' file.
 Args are in the file name. Therein use '''read_QUBOs.py''' to read QUBOs. QUBos are stored in the dict with keys:
--- '''qubo''' - symmetric Q matrix in the form of dict,
--- '''ground_states''' vector of the ground state vector (or vectors if there is degeneration),
--- '''ground_obj''' - ground state objective.
+- ```"qubo"``` - symmetric Q matrix in the form of dict,
+- ```"ground_states"``` vector of the ground state vector (or vectors if there is degeneration),
+- ```"ground_obj"``` - ground state objective.
 
 
 
