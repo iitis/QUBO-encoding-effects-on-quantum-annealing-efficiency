@@ -1,4 +1,4 @@
-\documentclass[aps,notitlepage]{revtex4-2}
+\documentclass[superscriptaddress, aps,notitlepage]{revtex4-2}
 \usepackage[utf8]{inputenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{microtype}
@@ -9,7 +9,6 @@
 \usepackage{natbib}
 \usepackage{hyperref}
 \usepackage{todonotes}
-\usepackage{subcaption}
 \usepackage[section]{placeins}
 
     % \setlength{\parindent}{0em}
@@ -25,6 +24,17 @@
 \begin{document}
 
 \title{QUBO encoding effects on quantum annealing efficiency}
+\author{Emery Doucet}
+\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\author{Sebastian Deffner}
+\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\affiliation{National Quantum Laboratory, College Park, MD 20740, USA}
+\author{{\L}ukasz Pawela}
+\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
+\author{Bart{\l}omiej Gardas}
+\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
+\author{Krzysztof Domino}
+\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
 \date{\today}
 \maketitle
 
@@ -165,13 +175,31 @@ This could also expand to include different problem encodings, for example compa
 
 \section{Main question}
 
-When we vary the hyperparameters of our optimization problems (binary encoding, penalty parameters, annealing details, etc.), what happens to the efficiency of the optimization process? Can this tell us anything about how to choose these hyperparameters, or show us some interesting differences e.g. in the split vs. overlapping cases?
+When we vary the hyperparameters of our optimization problems (binary encoding, penalty parameters, annealing details, etc.), what happens to the efficiency of the optimization process? 
+Can this tell us anything about how to choose these hyperparameters, or show us some interesting differences e.g. in the split vs. overlapping cases?
 
+These questions are equally valid for any optimization process, there is nothing special about quantum annealing in this regard. 
+In principle, any optimizer can be considered as a black box which takes in some amount of energy to perform the optimization, and produces a solution alongside some amount of waste heat.
+This can always be understood as a thermodynamic process, and we may always compute or estimate the quantity of energy input, wasted, or directed to the output, as well as the entropy production, etc.
+Therefore we could compute the thermodynamic efficiency of any optimizer.
 
-We can think about solving QUBOs on the classical device and asses the 
-spectrum as well as quality of solution in this way.
+It may be a good idea to see if there is some classical optimizer or classical annealing architecture which can be simulated which allows the efficiency to be computed which is computationally simpler than quantum annealing. 
+This would serve two uses, firstly and most obviously starting with an easier case will be easier, and secondly we would then have the ability to compare our eventual results for quantum annealing to a classical optimization. 
+Whether or not any given QUBO problem is dependent on which solver is used, and there is some intuition that some problems which are difficult for classical solvers may not be so difficult for a quantum annealer, and vice versa. 
+This is then probably also true for the thermodynamic efficiency of the solvers, there are likely some QUBOs which can be efficiently solved on a quantum annealer that are especially inefficient on a classical solver, as well as some QUBOs with the opposite property.
+It would be interesting to see if this is true, and assuming it is to see if there is a relationship between which solvers are more efficient and which are more effective.
 
-\section{Numerical studies}
+One place we might start is with one of the classical annealing models which have been tested against the D-Wave machines to try to demonstrate that they are actually quantum annealers. 
+For example, a model of classical annealing which works by using classical 3D vectors instead of qubits has been tested against the D-Wave machine several times, e.g. in Ref.~\cite{Boixo2014}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.66\textwidth]{figs/nphys2900_Fig1ad.pdf}
+    \caption{(Taken from figure 1 of Ref.~\cite{Boixo2014}) Success probabilities for solving 1000 problems each with 108 qubits using (a) the D-Wave One machine and (d) a classical annealing model where the quantum spins are replaced with classical $O(3)$ spins. Both distributions are bimodal showing that some problems are easy and some are hard, but not all problems hard for the classical model appear hard for the quantum annealer. That work also provides comparisons to simulated annealing -- which gives completely different results and to simulated quantum annealing (different from a simulation of a quantum annealer) -- which gives very similar results to quantum annealing.}
+    \label{fig:BoixoDWSD}
+\end{figure}
+The behavior of this model is similar to but not identical to that of quantum annealing, and the comparison [see Fig.~\ref{fig:BoixoDWSD}] does appear to support the idea that some problems are only hard for certain solvers. 
+
+\section{Numerical studies of quantum annealing}
 
 Numerical simulations seem like a reasonable tool for this, as they should be able to give more detailed results through fine parameter sweeps without needing to run a huge number of experiments on a real annealer.
 
@@ -191,16 +219,24 @@ Also, if the simulation is detailed enough then we can read out or at least esti
 
 Ultimately the goal of the simulation work is to have a code which takes a QUBO/Ising Hamiltonian $H$ along with a description of the annealing process (annealing schedule $A(t)$ \& initial state $\psi_0$) and computes the thermodynamic and computational efficiencies, $\eta_{\rm th}$ and $\eta_{\rm comp}$, as well as the (normalized) average solution energy $Q_{\rm GS}$.
 
+\subsection{Numerical issues}
+
+There are some important issues with this approach.
+One is that even in the best case the problems which can be simulated will be \emph{tiny} compared to the full size of the quantum annealer.
+It's not at all obvious that whatever conclusions can be drawn from such tiny problems will hold when solving large problems requiring hundreds or thousands of qubits.
+A second related problem is that the nature of the quantum annealing process (long, slow evolutions compared to the intrinsic timescales of the Hamiltonian) mean that the master equation is extremely stiff.
+It will be crucial to have a very good handle on the errors in the simulation to ensure that whatever results are obtained are accurate.
+
 \subsection{What to simulate}
 
 For small QUBOs, hopefully the simulation process is quick enough that we can sweep various parameters and study how the efficiencies vary. 
-These might be good things to run on the HPC resources we have here at UMBC.
+These might be good things to run on the HPC resources we have access to, for example the cluster at UMBC.
 
 There are a few plots which seem like clear targets, first with forward annealing:
 \begin{enumerate}
     \item Sweep the penalty parameters $p_{\rm sum}$ and $p_{\rm pair}$. Do either of the efficiencies show any kind of transition when the QUBO spectrum is split vs. unsplit? For this, we would also want to diagonalize the QUBOs exactly and plot some kind of signed gap between feasible and unfeasible solutions.
     \item For a couple choices of QUBO parameters (e.g., split vs. unsplit vs. boundary), how do the efficiencies scale with the annealing time? Is there any difference in scaling in the different regimes?
-    \item These experiments can be repeated for the two types of master equations constructed in \cite{Albash2012}, to see if the results are robust predictions or if they are highly dependent on the exact model used. 
+    \item These experiments can be repeated for the two types of master equations constructed in \cite{Albash2012} or with other simulation techniques to see if the results are robust predictions or if they are highly dependent on the exact model used. 
 \end{enumerate}
 and also with reverse annealing:
 \begin{enumerate}
@@ -229,7 +265,7 @@ Alternately, if the qualitative behavior of the efficiency is captured by a clas
 
 This would be something to think about once the primary study has been done.
 
-\section{Experiments}
+\section{Quantum annealing experiments}
 
 Exactly what might be worth testing on the real device will depend on what the simulations show.
 Some possibilities might include:
