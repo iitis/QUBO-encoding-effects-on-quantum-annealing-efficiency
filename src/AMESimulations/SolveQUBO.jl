@@ -160,6 +160,7 @@ function SolveWithAME(annealing_problem, annealing_time, ss)
     populations
 end
 
+tf = parsed_args["annealing-time"]
 s_range = 0:0.0025:1
 
 if parsed_args["plot-energies"]
@@ -176,9 +177,7 @@ if parsed_args["plot-energies"]
     println("Done!")
 end
 
-
-
-tf = parsed_args["annealing-time"]
+# *** Do the actual simulation ***
 solution_pops = parsed_args["solve-ame"] ? SolveWithAME(annealing, tf, s_range) : SolveWithSE(annealing, tf, s_range)
 
 print("Plotting populations...")
@@ -195,15 +194,22 @@ ylabel!("Population")
 savefig(fn_populations)
 println("Done!")
 
-println("*** Most likely results ***")
+println("\n*** Most likely results ***")
 final_pops = solution_pops[:,end]
 final_results = Dict{String, Float64}()
 for idx = 0:(2^num_qubits-1)
     final_results[string(idx; base=2, pad=num_qubits)] = final_pops[idx+1]
 end
 sorted_final_results = sort(collect(final_results); by=x->x[2], rev=true) 
+
+println("\tState\t\tProbability     Objective Value")
 for (state, pop) in sorted_final_results[1:8]
-    @printf("\t%s\t%.6f\n", state, pop)
+    obj = EvaluateQUBOObjective(problem.qubo, state, num_qubits)
+    @printf("\t%s\t\t%7.3f%%        %+.3f\n", state, 100*pop, obj)
+    #@printf("\t%s\t\t%.6f\t\t%+.3f\n", state, pop, obj)
 end
-println("Target solution: ", problem.ground_states)
+
+println("Target solution:  ", problem.ground_states)
+@printf("Target objective: %.6f\n", problem.opt_objective)
+println("\tNOTE: This value is offset by a quantity proportional to (penalty * num_jobs)")
 print("\n")

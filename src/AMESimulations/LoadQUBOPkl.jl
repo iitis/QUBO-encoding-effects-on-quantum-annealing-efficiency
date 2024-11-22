@@ -26,3 +26,17 @@ struct QUBOProblem
         new(opt_objective, ground_states, qubo)
     end
 end
+
+function EvaluateQUBOObjective(qubo::Dict{Tuple{Int64, Int64}, Float64}, state::String, Nq::Int64)
+    bits = (s -> parse(Int64, s)).(collect(state))
+
+    objective = 0.0
+    for ((i,j), w) in qubo
+        si = bits[i]
+        sj = bits[j]
+
+        objective = objective + w * si*sj
+    end
+
+    objective
+end
