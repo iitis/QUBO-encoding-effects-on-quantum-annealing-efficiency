@@ -93,10 +93,12 @@ def create_QUBO_dict(args, instance):
             print("objective = ", qubo.compute_objective(x))
             assert qubo.compute_objective(x) == instance["ground_obj"]
 
+            energy = qubo.compute_objective(x) - qubo.compute_energy_offset(JS)
+
 
         Q = qubo.qubo_terms
 
-        return {"qubo": Q, "ground_states": ground_states, "ground_obj": instance["ground_obj"]}
+        return {"qubo": Q, "ground_states": ground_states, "ground_obj": instance["ground_obj"], "ground_energy": energy}
 
 
 if __name__ == "__main__":

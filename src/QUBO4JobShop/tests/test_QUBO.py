@@ -238,6 +238,11 @@ def test_check_solution():
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.compute_objective(x) == 1.0
 
+    assert qubo.compute_energy(x) == 1.0 - 4
+
+    assert qubo.compute_energy_offset(JS) == 4
+
+
     x = [0,1,0,0,0,0,0,1]
     assert qubo.nonfeasible_pair_constraints(x) == 1
 

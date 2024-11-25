@@ -272,3 +272,34 @@ class Implement_QUBO():
 
         assert objective <= self.JS.max_obj  
         return objective
+    
+
+    def compute_energy(self, x) -> float:
+        """
+        returns energy of QUBO
+        """
+        if len(x) != self.qubo_variables.size:
+            raise ValueError (f"sol length {len(x)} not equal to n.o. QUBO vars {self.qubo_variables.size}")
+        e = 0
+        for i in range(self.qubo_variables.size):
+            for j in range(self.qubo_variables.size):
+                if (i+1, j+1) in self.qubo_terms:  # sparcity problem
+                    e += x[i]*self.qubo_terms[(i+1, j+1)]*x[j]
+        
+        return e
+    
+
+    def compute_energy_offset(self, JS) -> float:
+        """
+        returns energy offset (objective - energy)
+        """
+        offset = 0
+        for job in JS.jobs:
+            offset += job.no_machines * self.psum
+
+        return offset
+
+
+
+
+

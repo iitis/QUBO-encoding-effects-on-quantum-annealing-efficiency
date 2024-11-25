@@ -202,7 +202,7 @@ for idx = 0:(2^num_qubits-1)
 end
 sorted_final_results = sort(collect(final_results); by=x->x[2], rev=true) 
 
-println("\tState\t\tProbability     Objective Value")
+println("\tState\t\tProbability     Energy Value")
 for (state, pop) in sorted_final_results[1:8]
     obj = EvaluateQUBOObjective(problem.qubo, state, num_qubits)
     @printf("\t%s\t\t%7.3f%%        %+.3f\n", state, 100*pop, obj)

@@ -78,6 +78,10 @@ def test_smallest_instances_simulated_annelaing():
         
         assert sched == {1: {1: (1, 2)}, 2: {1: (2, 3)}}
 
+        assert qubo.compute_objective(x) == pytest.approx(0.25)
+
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == qubo.compute_objective(x) 
+
 
         JS = instance_6q()
         qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
@@ -106,6 +110,9 @@ def test_smallest_instances_simulated_annelaing():
 
         assert xs[0]['obj'] == pytest.approx(0.5)
         x = xs[0]['sol']
+
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == qubo.compute_objective(x) 
+
         sched, _ = qubo.qubo_vec2_schedule(x)
         
         assert sched == {1: {1: (1, 2), 2: (2,3)}, 2: {1: (2, 3), 3:(3,4)}}
@@ -214,6 +221,8 @@ def test_on_simulated_annelaing():
 
         assert xs[0]['obj'] == pytest.approx(0.2)
 
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == pytest.approx(qubo.compute_objective(x))
+
         # degeneracy
         assert sched in ( {2: {2: (1, 3), 3: (5, 7)}, 3: {1: (1, 2), 3: (2, 5)}},
                         {2: {2: (2, 4), 3: (5, 7)}, 3: {1: (1, 2), 3: (2, 5)}},
@@ -270,6 +279,8 @@ def test_on_simulated_annelaing():
 
         assert xs[0]['obj'] == pytest.approx(0.5)
 
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == pytest.approx(qubo.compute_objective(x))
+
         assert sched in ( {1: {2: (0.0, 2.0), 3: (2.0, 4.0)}, 2: {2: (2.0, 4.0), 3: (4.0, 6.0)}, 3: {1: (1.0, 2.0), 3: (6.0, 9.0)}},
                         {1: {2: (0.0, 2.0), 3: (2.0, 4.0)}, 2: {2: (2.0, 4.0), 3: (4.0, 6.0)}, 3: {1: (2.0, 3.0), 3: (6.0, 9.0)}},
                         {1: {2: (0.0, 2.0), 3: (2.0, 4.0)}, 2: {2: (2.0, 4.0), 3: (4.0, 6.0)}, 3: {1: (3.0, 4.0), 3: (6.0, 9.0)}},
@@ -309,6 +320,8 @@ def test_on_simulated_annelaing():
 
         assert xs[0]['obj'] == pytest.approx(0.083333333333333333)
 
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == pytest.approx(qubo.compute_objective(x))
+
         assert sched in ( {1: {1: (0.0, 2.0), 2: (3.0, 5.0)}, 2: {2: (1.0, 3.0), 1: (3.0, 5.0)}},
                          {1: {1: (1.0, 3.0), 2: (3.0, 5.0)}, 2: {2: (1.0, 3.0), 1: (3.0, 5.0)}}
         )
@@ -327,6 +340,27 @@ def test_on_simulated_annelaing():
         sched, _ = qubo.qubo_vec2_schedule(x)
 
         assert xs[0]['obj'] == pytest.approx(0.1)
+
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == pytest.approx(qubo.compute_objective(x))
+        
+        assert sched == {1: {1: (2.0, 6.0), 2: (6.0, 8.0) , 3: (8.0, 10.0)}, 2: {1: (0.0, 2.0)}}
+
+
+        JS = instance_6()
+        qubo = Implement_QUBO(JS, psum = 5, ppair = 1.9)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=250, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+        xs = sort_sols(d)
+
+        x = xs[0]['sol']
+        sched, _ = qubo.qubo_vec2_schedule(x)
+
+        assert xs[0]['obj'] == pytest.approx(0.1)
+
+        assert qubo.compute_energy(x) + qubo.compute_energy_offset(JS) == pytest.approx(qubo.compute_objective(x))
         
         assert sched == {1: {1: (2.0, 6.0), 2: (6.0, 8.0) , 3: (8.0, 10.0)}, 2: {1: (0.0, 2.0)}}
 
