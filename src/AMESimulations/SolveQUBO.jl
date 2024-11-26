@@ -37,6 +37,9 @@ s = ArgParseSettings("Solve a QUBO by explicit simulation of quantum annealing."
     "--solve-ame", "-s"
         action = :store_true
         help = "simulate using the adiabatic master equation"
+    "--sparse"
+        action = :store_true
+        help = "use sparse matrices"
     "--plot-energies"
         action = :store_true
         help = "store a plot of the Ising Hamiltonian energies"
@@ -65,24 +68,25 @@ println("QUBO encoding requires ", num_qubits, " qubits.")
 ###
 
 # Translate the QUBO into an Ising Hamiltonian
-function QUBO2Ising(qubo_dict, Nq)
-    Hf   = zeros(Complex{Float64}, 2^Nq, 2^Nq)
-    Heye = Matrix{Complex{Float64}}(I, 2^Nq, 2^Nq)
+function QUBO2Ising(qubo_dict, Nq; sparse=false)
+    Heye = (1/Nq) * collective_operator("I", Nq; sp=sparse)
+    Hf   = 0 * Heye
     for ((i,j), w) in qubo_dict
         if i == j
             # Si Si -> (I - Zi)/2
             Hf = Hf + (w/2)*Heye
-            Hf = Hf + single_clause(["Z"], [i], -w/2, Nq)
+            Hf = Hf + single_clause(["Z"], [i], -w/2, Nq; sp=sparse)
         else
             # Si Sj -> (I - Zi - Zj - Zi Zj)/4
             Hf = Hf + (w/4)*Heye
-            Hf = Hf + single_clause(["Z"], [i], -w/4, Nq)
-            Hf = Hf + single_clause(["Z"], [j], -w/4, Nq)
-            Hf = Hf + single_clause(["Z", "Z"], [i, j], w/4, Nq)
+            Hf = Hf + single_clause(["Z"], [i], -w/4, Nq; sp=sparse)
+            Hf = Hf + single_clause(["Z"], [j], -w/4, Nq; sp=sparse)
+            Hf = Hf + single_clause(["Z", "Z"], [i, j], w/4, Nq; sp=sparse)
         end
     end
     Hf
 end
+
 
 # Set up Hamiltonian
 print("Setting up annealing schedule...")
@@ -90,17 +94,33 @@ schedule = AnnealingSchedule(parsed_args["annealing-schedule"])
 println("Done!")
 
 print("Setting up Hamiltonian...")
-H = DenseHamiltonian(
-    [
-        (s) -> schedule.A_func(s),
-        (s) -> schedule.B_func(s)
-    ],
-    [
-        (-1/2) * standard_driver(num_qubits),
-        ( 1/2) * QUBO2Ising(problem.qubo, num_qubits)
-    ],
-    unit=:h # D-Wave annealing schedule has units of GHz
-)
+if parsed_args["sparse"]
+    print("Hamiltonian is SPARSE...")
+    H = SparseHamiltonian(
+        [
+            (s) -> schedule.A_func(s),
+            (s) -> schedule.B_func(s)
+        ],
+        [
+            (-1/2) * standard_driver(num_qubits; sp=true),
+            ( 1/2) * QUBO2Ising(problem.qubo, num_qubits; sparse=true)
+        ],
+        unit=:h # D-Wave annealing schedule has units of GHz
+    )
+else
+    print("Hamiltonian is DENSE...")
+    H = DenseHamiltonian(
+        [
+            (s) -> schedule.A_func(s),
+            (s) -> schedule.B_func(s)
+        ],
+        [
+            (-1/2) * standard_driver(num_qubits),
+            ( 1/2) * QUBO2Ising(problem.qubo, num_qubits)
+        ],
+        unit=:h # D-Wave annealing schedule has units of GHz
+    )
+end
 println("Done!")
 
 # Set up the enviornment interaction
