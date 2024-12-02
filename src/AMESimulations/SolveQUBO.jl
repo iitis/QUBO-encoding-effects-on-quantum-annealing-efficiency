@@ -230,6 +230,6 @@ for (state, pop) in sorted_final_results[1:8]
 end
 
 println("Target solution:  ", problem.ground_states)
-@printf("Target objective: %.6f\n", problem.opt_objective)
-println("\tNOTE: This value is offset by a quantity proportional to (penalty * num_jobs)")
+@printf("Target energy: %.6f\n", problem.opt_energy)
+
 print("\n")

@@ -13,6 +13,7 @@ load_pydict_pkl = py"load_pickle"
 
 struct QUBOProblem
     opt_objective::Float64
+    opt_energy::Float64
     ground_states::Array{Int64, 2}
     qubo::Dict{Tuple{Int64, Int64}, Float64}
 
@@ -20,10 +21,11 @@ struct QUBOProblem
         qubo_pydict = load_pydict_pkl(path)
 
         opt_objective = qubo_pydict["ground_obj"]
+        opt_energy = qubo_pydict["ground_energy"]
         ground_states = qubo_pydict["ground_states"]
         qubo = Dict{Tuple{Int64, Int64}, Float64}(qubo_pydict["qubo"])
 
-        new(opt_objective, ground_states, qubo)
+        new(opt_objective, opt_energy, ground_states, qubo)
     end
 end
 
