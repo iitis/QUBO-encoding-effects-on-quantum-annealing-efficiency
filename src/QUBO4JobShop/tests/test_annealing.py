@@ -427,7 +427,38 @@ def test_spectrum_6qbits():
 
 
 
+def test_spectrum_10qbits():
+    JS = instance_0()
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
 
+    sols = [[1,0,0,0,1,0,1,0,0,0], [0,1,0,0,1,0,1,0,0,0], [1,0,0,0,0,1,1,0,0,0], 
+            [0,1,0,0,0,1,1,0,0,0], [0,0,1,0,0,1,1,0,0,0], [0,1,0,0,0,1,0,1,0,0],
+            [0,0,1,0,0,1,0,1,0,0], [1,0,0,1,0,0,0,0,0,0]]
+    
+    assert qubo.compute_energy(sols[0]) == -5.5
+    assert qubo.is_feasible(sols[0]) == True
+
+    assert qubo.compute_energy(sols[1]) == -5.5
+    assert qubo.is_feasible(sols[1]) == True
+
+    assert qubo.compute_energy(sols[2]) == -5.0
+    assert qubo.is_feasible(sols[2]) == True
+
+    assert qubo.compute_energy(sols[3]) == -5.0
+    assert qubo.is_feasible(sols[3]) == True
+
+    assert qubo.compute_energy(sols[4]) == -5.0
+    assert qubo.is_feasible(sols[4]) == True
+
+    assert qubo.compute_energy(sols[5]) == -4-2/3
+    assert qubo.is_feasible(sols[5]) == True
+
+    assert qubo.compute_energy(sols[6]) == -4-2/3
+    assert qubo.is_feasible(sols[6]) == True
+
+    assert qubo.compute_energy(sols[7]) == -4
+    assert qubo.is_feasible(sols[7]) == False
 
 
     
