@@ -230,13 +230,18 @@ for (state, pop) in sorted_final_results[1:8]
     #@printf("\t%s\t\t%.6f\t\t%+.3f\n", state, pop, energy)
 end
 
-println("Target solution:  ", problem.ground_states)
-@printf("Target energy: %.6f\n", problem.opt_energy)
+no_feas, no_sols, f_prob = FeasibilityPercentage(sorted_final_results, problem)
+no_ground, _, ground_prob = OptimalityPercentage(sorted_final_results, problem, problem.opt_energy)
 
+@printf("Probability to reach feasible solution: %.6f\n", f_prob)
+@printf("Probability to reach ground state: %.6f\n", ground_prob)
 
-feasible_sols, no_sols = FeasibilityPercentage(sorted_final_results, problem)
+println(".....................................................")
 
+println("Ground state solution:  ", problem.ground_states)
+@printf("Ground state energy: %.6f\n", problem.opt_energy)
 println("total n.o. solutions: ", no_sols)
-println("total n.o. feasible sols: ", feasible_sols)
+println("n.o. distinct ground states: ", no_ground)
+println("n.o. distinct feasible sols: ", no_feas)
 
 print("\n")

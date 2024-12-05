@@ -56,22 +56,41 @@ function EvaluateFeasibility(qubo::Dict{Tuple{Int64, Int64}, Float64},
     
 
     energy = EvaluateQUBOEnergy(qubo, state)
-
     objective = EvaluateQUBOEnergy(obj_part_qubo, state)
 
-    return energy == objective - offset
+    return isapprox(energy, objective - offset)
 end
 
 
 function FeasibilityPercentage(results::Vector{Pair{String, Float64}}, problem::QUBOProblem)
 
     k = 0
+    f_prob = 0
     for (state, pop) in results
         if EvaluateFeasibility(problem.qubo, problem.obj_part_qubo, problem.offset, state)
             k = k+1
+            f_prob = f_prob + pop
         end
     end
     no_solutuons = length(results)
-    return k , no_solutuons 
+    return k , no_solutuons, f_prob 
 end
+
+
+function OptimalityPercentage(results::Vector{Pair{String, Float64}}, problem::QUBOProblem, ground_energy::Float64)
+
+    k = 0
+    f_prob = 0
+    for (state, pop) in results
+        if EvaluateFeasibility(problem.qubo, problem.obj_part_qubo, problem.offset, state)
+            if isapprox(EvaluateQUBOEnergy(problem.qubo, state), ground_energy)
+                k = k+1
+                f_prob = f_prob + pop
+            end
+        end
+    end
+    no_solutuons = length(results)
+    return k , no_solutuons, f_prob 
+end
+
 
