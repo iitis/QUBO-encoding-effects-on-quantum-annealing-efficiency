@@ -54,6 +54,7 @@ class Implement_QUBO():
         """ initialize  with penalty values and the objective function """
         self.psum = psum
         self.ppair = ppair
+        self.obj_terms = {}
         self.qubo_terms = {}
         self.qubo_variables = QUBO_Variables(JS)
         self.inds_sum_same = {}
@@ -142,6 +143,7 @@ class Implement_QUBO():
                 k = self.qubo_variables.vars_jmt[(j,m,t)]
                 acctual_weight = Job.weight*(t-l)/(u-l)
                 add_to_dict(self.qubo_terms, key = (k, k), value= acctual_weight)
+                add_to_dict(self.obj_terms, key = (k, k), value= acctual_weight)
                 
 
 

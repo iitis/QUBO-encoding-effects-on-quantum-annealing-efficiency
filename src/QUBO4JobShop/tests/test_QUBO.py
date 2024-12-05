@@ -237,6 +237,9 @@ def test_check_solution():
     x = [1,0,0,0,0,0,0,1]
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.compute_objective(x) == 1.0
+    assert qubo.obj_terms == {(1, 1): 0.0, (2, 2): 0.25, (3, 3): 0.5, (4, 4): 0.75, (5, 5): 1.0, (6, 6): 0.0, (7, 7): 0.5, (8, 8): 1.0}
+    assert sum([x[i] * qubo.obj_terms[(i+1,i+1)] for i in range(len(x))]) == 1.0
+
 
     assert qubo.compute_energy(x) == 1.0 - 4
 
@@ -291,6 +294,7 @@ def test_objective():
     x = [1,0,0,0,0,0,0,1]
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.compute_objective(x) == 0.5
+    assert sum([x[i] * qubo.obj_terms[(i+1,i+1)] for i in range(len(x))]) == 0.5
 
     schedule, _ = qubo.qubo_vec2_schedule(x)
 
