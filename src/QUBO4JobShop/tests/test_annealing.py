@@ -365,7 +365,16 @@ def test_on_simulated_annelaing():
         assert sched == {1: {1: (2.0, 6.0), 2: (6.0, 8.0) , 3: (8.0, 10.0)}, 2: {1: (0.0, 2.0)}}
 
         
-        
+
+
+def test_spectrum():
+    JS = instance_4()
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
+
+    sols = [[1,0,0,1], [0,1,1,0], [0,0,1,0], [1,0,0,0], [0,0,0,1], [1,0,1,0], [0,1,0,1], [1,1,0,0]]
+    
+
 
 
     

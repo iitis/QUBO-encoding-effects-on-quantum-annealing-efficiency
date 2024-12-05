@@ -222,11 +222,12 @@ for idx = 0:(2^num_qubits-1)
 end
 sorted_final_results = sort(collect(final_results); by=x->x[2], rev=true) 
 
-println("\tState\t\tProbability     Energy Value")
+println("\tState\t\tProbability     Energy Value    Feasible sol")
 for (state, pop) in sorted_final_results[1:8]
-    obj = EvaluateQUBOObjective(problem.qubo, state, num_qubits)
-    @printf("\t%s\t\t%7.3f%%        %+.3f\n", state, 100*pop, obj)
-    #@printf("\t%s\t\t%.6f\t\t%+.3f\n", state, pop, obj)
+    energy = EvaluateQUBOEnergy(problem.qubo, state, num_qubits)
+    feasibility = EvaluateFeasibility(problem.qubo, problem.obj_part_qubo, problem.offset, state, num_qubits)
+    @printf("\t%s\t\t%7.3f%%        %+.3f\t\t  %s\n", state, 100*pop, energy, feasibility)
+    #@printf("\t%s\t\t%.6f\t\t%+.3f\n", state, pop, energy)
 end
 
 println("Target solution:  ", problem.ground_states)

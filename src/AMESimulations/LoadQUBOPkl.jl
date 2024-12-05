@@ -14,31 +14,52 @@ load_pydict_pkl = py"load_pickle"
 struct QUBOProblem
     opt_objective::Float64
     opt_energy::Float64
+    offset::Float64
     ground_states::Array{Int64, 2}
     qubo::Dict{Tuple{Int64, Int64}, Float64}
+    obj_part_qubo::Dict{Tuple{Int64, Int64}, Float64}
 
     function QUBOProblem(path::String)
         qubo_pydict = load_pydict_pkl(path)
 
         opt_objective = qubo_pydict["ground_obj"]
         opt_energy = qubo_pydict["ground_energy"]
+        offset = qubo_pydict["offset"]
         ground_states = qubo_pydict["ground_states"]
         qubo = Dict{Tuple{Int64, Int64}, Float64}(qubo_pydict["qubo"])
+        obj_part_qubo = Dict{Tuple{Int64, Int64}, Float64}(qubo_pydict["objective_part"])
 
-        new(opt_objective, opt_energy, ground_states, qubo)
+        new(opt_objective, opt_energy, offset, ground_states, qubo, obj_part_qubo)
     end
 end
 
-function EvaluateQUBOObjective(qubo::Dict{Tuple{Int64, Int64}, Float64}, state::String, Nq::Int64)
+function EvaluateQUBOEnergy(qubo::Dict{Tuple{Int64, Int64}, Float64}, state::String, Nq::Int64)
     bits = (s -> parse(Int64, s)).(collect(state))
 
-    objective = 0.0
+    energy = 0.0
     for ((i,j), w) in qubo
         si = bits[i]
         sj = bits[j]
 
-        objective = objective + w * si*sj
+        energy = energy + w * si*sj
     end
 
-    objective
+    energy
 end
+
+
+
+function EvaluateFeasibility(qubo::Dict{Tuple{Int64, Int64}, Float64}, 
+                                obj_part_qubo::Dict{Tuple{Int64, Int64}, Float64}, 
+                                offset::Float64, 
+                                state::String, 
+                                Nq::Int64)
+    
+
+    energy = EvaluateQUBOEnergy(qubo, state, Nq)
+
+    objective = EvaluateQUBOEnergy(obj_part_qubo, state, Nq)
+
+    return energy == objective - offset
+end
+
