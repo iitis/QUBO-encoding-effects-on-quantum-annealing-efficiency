@@ -33,7 +33,7 @@ struct QUBOProblem
     end
 end
 
-function EvaluateQUBOEnergy(qubo::Dict{Tuple{Int64, Int64}, Float64}, state::String, Nq::Int64)
+function EvaluateQUBOEnergy(qubo::Dict{Tuple{Int64, Int64}, Float64}, state::String)
     bits = (s -> parse(Int64, s)).(collect(state))
 
     energy = 0.0
@@ -52,14 +52,26 @@ end
 function EvaluateFeasibility(qubo::Dict{Tuple{Int64, Int64}, Float64}, 
                                 obj_part_qubo::Dict{Tuple{Int64, Int64}, Float64}, 
                                 offset::Float64, 
-                                state::String, 
-                                Nq::Int64)
+                                state::String)
     
 
-    energy = EvaluateQUBOEnergy(qubo, state, Nq)
+    energy = EvaluateQUBOEnergy(qubo, state)
 
-    objective = EvaluateQUBOEnergy(obj_part_qubo, state, Nq)
+    objective = EvaluateQUBOEnergy(obj_part_qubo, state)
 
     return energy == objective - offset
+end
+
+
+function FeasibilityPercentage(results::Vector{Pair{String, Float64}}, problem::QUBOProblem)
+
+    k = 0
+    for (state, pop) in results
+        if EvaluateFeasibility(problem.qubo, problem.obj_part_qubo, problem.offset, state)
+            k = k+1
+        end
+    end
+    no_solutuons = length(results)
+    return k , no_solutuons 
 end
 
