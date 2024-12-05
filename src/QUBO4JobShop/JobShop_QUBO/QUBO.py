@@ -252,6 +252,11 @@ class Implement_QUBO():
                 broken_constraints += np.abs(count - 1)
 
         return broken_constraints
+    
+
+    def is_feasible(self, x) -> bool:
+
+        return self.nonfeasible_sum_constraint(x) == 0 and self.nonfeasible_pair_constraints(x) == 0
 
 
     def compute_objective(self, x) -> float:

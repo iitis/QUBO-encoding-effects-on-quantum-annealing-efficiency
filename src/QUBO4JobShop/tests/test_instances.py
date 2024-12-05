@@ -261,6 +261,7 @@ def test_QUBO():
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.nonfeasible_sum_constraint(x) == 0
+    assert qubo.is_feasible(x) == True
     assert qubo.compute_objective(x) == pytest.approx(ilp_obj)
 
 
@@ -278,6 +279,7 @@ def test_QUBO():
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.nonfeasible_sum_constraint(x) == 0
+    assert qubo.is_feasible(x) == True
     assert qubo.compute_objective(x) == pytest.approx(ilp_obj)
 
 
@@ -296,6 +298,7 @@ def test_QUBO():
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.nonfeasible_sum_constraint(x) == 0
+    assert qubo.is_feasible(x) == True
     assert qubo.compute_objective(x) == pytest.approx(ilp_obj)
 
 
@@ -313,6 +316,7 @@ def test_QUBO():
     x = qubo.schedule_2_x(sched)
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.nonfeasible_sum_constraint(x) == 0
+    assert qubo.is_feasible(x) == True
     assert qubo.compute_objective(x) == pytest.approx(ilp_obj)
 
 
@@ -332,6 +336,7 @@ def test_QUBO():
 
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.nonfeasible_sum_constraint(x) == 0
+    assert qubo.is_feasible(x) == True
     assert qubo.compute_objective(x) == pytest.approx(ilp_obj)
 
 

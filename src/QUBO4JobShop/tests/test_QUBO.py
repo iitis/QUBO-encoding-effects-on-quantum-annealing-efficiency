@@ -242,26 +242,30 @@ def test_check_solution():
 
 
     assert qubo.compute_energy(x) == 1.0 - 4
-
     assert qubo.compute_energy_offset(JS) == 4
-
+    assert qubo.is_feasible(x) == True
 
     x = [0,1,0,0,0,0,0,1]
     assert qubo.nonfeasible_pair_constraints(x) == 1
+    assert qubo.is_feasible(x) == False
 
     x = [0,0,1,0,0,0,0,1]
     assert qubo.nonfeasible_pair_constraints(x) == 1
+    assert qubo.is_feasible(x) == False
 
     # Job 2 first
     x = [0,0,0,0,1,1,0,0]
     assert qubo.nonfeasible_pair_constraints(x) == 0
     assert qubo.compute_objective(x) == 1.0
+    assert qubo.is_feasible(x) == True
 
     x = [0,0,0,0,1,0,1,0]
     assert qubo.nonfeasible_pair_constraints(x) == 1
+    assert qubo.is_feasible(x) == False
 
     x = [0,0,0,0,1,0,0,1]
     assert qubo.nonfeasible_pair_constraints(x) == 1
+    assert qubo.is_feasible(x) == False
 
 
     # sum constraint

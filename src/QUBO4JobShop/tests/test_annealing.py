@@ -367,13 +367,66 @@ def test_on_simulated_annelaing():
         
 
 
-def test_spectrum():
-    JS = instance_4()
+def test_spectrum_4qbits():
+    JS = instance_4q()
     qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
     qubo.make_QUBO()
 
-    sols = [[1,0,0,1], [0,1,1,0], [0,0,1,0], [1,0,0,0], [0,0,0,1], [1,0,1,0], [0,1,0,1], [1,1,0,0]]
-    
+    sols = [[1,0,0,1], [0,1,1,0], [0,0,1,0], [1,0,0,0], [0,0,0,1], [1,0,1,0], [1,1,0,0], [0,1,0,1]]
+
+
+    assert qubo.compute_energy(sols[0]) == -3.5
+    assert qubo.is_feasible(sols[0]) == True
+    assert qubo.qubo_vec2_schedule(sols[0])[0] == {1: {1: (1, 2)}, 2: {1: (2, 3)}}
+
+    assert qubo.compute_energy(sols[1]) == -3.0
+    assert qubo.is_feasible(sols[1]) == True
+    assert qubo.qubo_vec2_schedule(sols[1])[0] == {1: {1: (2, 3)}, 2: {1: (1, 2)}}
+
+    assert qubo.compute_energy(sols[2]) == -2.0
+    assert qubo.is_feasible(sols[2]) == False
+    assert qubo.compute_energy(sols[3]) == -2.0
+    assert qubo.is_feasible(sols[3]) == False
+    assert qubo.compute_energy(sols[4]) == -1.5
+    assert qubo.is_feasible(sols[4]) == False
+    assert qubo.compute_energy(sols[5]) == 0.0
+    assert qubo.is_feasible(sols[5]) == False
+    assert qubo.compute_energy(sols[6]) == 1.0
+    assert qubo.is_feasible(sols[6]) == False
+    assert qubo.compute_energy(sols[7]) == 1.5
+    assert qubo.is_feasible(sols[7]) == False
+
+
+def test_spectrum_6qbits():
+    JS = instance_6q()
+    qubo = Implement_QUBO(JS, psum = 2, ppair = 2)
+    qubo.make_QUBO()
+
+    sols = [[1,0,1,0,0,1], [0,1,0,1,1,0], [1,0,0,1,0,1], [0,0,1,0,1,0], [0,1,0,1,0,0]]
+
+    assert qubo.compute_energy(sols[0]) == -5.5
+    assert qubo.is_feasible(sols[0]) == True
+    assert qubo.qubo_vec2_schedule(sols[0])[0] == {1: {1: (1, 2), 2: (2, 3)}, 2: {1: (2, 3)}}
+
+
+    assert qubo.compute_energy(sols[1]) == -5.0
+    assert qubo.is_feasible(sols[1]) == True
+    assert qubo.qubo_vec2_schedule(sols[1])[0] == {1: {1: (2, 3), 2: (3, 4)}, 2: {1: (1, 2)}}
+
+    assert qubo.compute_energy(sols[2]) == -4.5
+    assert qubo.is_feasible(sols[2]) == True
+    assert qubo.qubo_vec2_schedule(sols[2])[0] == {1: {1: (1, 2), 2: (3, 4)}, 2: {1: (2, 3)}}
+
+
+    assert qubo.compute_energy(sols[3]) == -4.0
+    assert qubo.is_feasible(sols[3]) == False
+
+
+    assert qubo.compute_energy(sols[4]) == -3.0
+    assert qubo.is_feasible(sols[4]) == False
+
+
+
 
 
 
