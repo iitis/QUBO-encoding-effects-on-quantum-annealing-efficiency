@@ -139,6 +139,8 @@ if __name__ == "__main__":
 
     # such QUBO sizes are supported
     assert args.no_qbits in [4, 5, 6, 8, 10]
+    assert args.ppair > 0
+    assert args.psum > 0
 
     if args.no_qbits == 4:
         instance = instance_4q()
