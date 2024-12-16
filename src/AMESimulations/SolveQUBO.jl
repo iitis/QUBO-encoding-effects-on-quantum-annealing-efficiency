@@ -147,8 +147,9 @@ println("Done!")
 # Solve the problem with the unitary solver and an annealing time of 10ns (for testing)
 ###
 function SolveWithSE(annealing_problem, annealing_time, ss)
+    # Vern7 appears to be fastest on the largest problem, only a tiny bit faster than Vern6
     println("Solving with Schrodinger equation...")
-    sol_se = @time solve_schrodinger(annealing_problem, annealing_time, alg=Tsit5(), reltol=1e-9, abstol=1e-9)
+    sol_se = @time solve_schrodinger(annealing_problem, annealing_time, alg=Vern7(), reltol=1e-9, abstol=1e-9)
     println("Done!")
 
     populations = map(
@@ -163,10 +164,11 @@ function SolveWithSE(annealing_problem, annealing_time, ss)
 end
 
 function SolveWithAME(annealing_problem, annealing_time, ss)
+    # Vern6 appears to be fastest on the 4 qubit problem, probably Vern7 is faster on larger problems
     println("Solving adiabatic master equation, part 1 (Unitary)...")
-    U = @time solve_unitary(annealing_problem, annealing_time, alg=Tsit5(), abstol=1e-9, reltol=1e-9)
+    U = @time solve_unitary(annealing_problem, annealing_time, alg=Vern6(), abstol=1e-9, reltol=1e-9)
     println("Solving adiabatic master equation, part 2 (Redfield)...")
-    sol_ame = @time solve_redfield(annealing_problem, annealing_time, U; alg=Tsit5(), abstol=1e-9, reltol=1e-9)
+    sol_ame = @time solve_redfield(annealing_problem, annealing_time, U; alg=Vern6(), abstol=1e-9, reltol=1e-9)
     println("Done!")
 
     populations = reduce(
