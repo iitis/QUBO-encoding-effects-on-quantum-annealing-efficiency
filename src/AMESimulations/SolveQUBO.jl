@@ -1,4 +1,6 @@
 using ArgParse
+using CSV
+using DataFrames
 using LinearAlgebra
 using OpenQuantumTools
 using OrdinaryDiffEq
@@ -53,6 +55,7 @@ end
 
 fn_energies    = isempty(parsed_args["name"]) ? "IsingEnergies.pdf" : parsed_args["name"] * "_IsingEnergies.pdf"
 fn_populations = isempty(parsed_args["name"]) ? "FinalPopulations.pdf" : parsed_args["name"] * "_FinalPopulations.pdf"
+fn_dataframe   = isempty(parsed_args["name"]) ? "FinalData.csv" : parsed_args["name"] * "_FinalData.csv"
 
 ###
 # Read the problem
@@ -216,34 +219,52 @@ ylabel!("Population")
 savefig(fn_populations)
 println("Done!")
 
-println("\n*** Most likely results ***")
+final_results = DataFrame(
+    state = String[],
+    probability = Float64[],
+    energy = Float64[],
+    objective = Float64[],
+    feasible = Bool[]
+)
 final_pops = solution_pops[:,end]
-final_results = Dict{String, Float64}()
 for idx = 0:(2^num_qubits-1)
-    final_results[string(idx; base=2, pad=num_qubits)] = final_pops[idx+1]
+    state = string(idx; base=2, pad=num_qubits)
+    push!(final_results,(
+        state,
+        final_pops[idx+1],
+        EvaluateQUBOEnergy(problem.qubo, state),
+        EvaluateQUBOEnergy(problem.obj_part_qubo, state),
+        EvaluateFeasibility(problem.qubo, problem.obj_part_qubo, problem.offset, state)
+    ))
 end
-sorted_final_results = sort(collect(final_results); by=x->x[2], rev=true) 
+sort!(final_results, [order(:probability, rev=true)])
+final_results_infeasible = filter(:feasible => ==(false), final_results)
+final_results_feasible   = filter(:feasible => ==(true),  final_results)
+final_results_optimal    = filter(:energy => e -> isapprox(e, problem.opt_energy), final_results_feasible)
 
-println("\tState\t\tProbability     Energy Value    Feasible sol")
-for (state, pop) in sorted_final_results[1:8]
-    energy = EvaluateQUBOEnergy(problem.qubo, state)
-    feasibility = EvaluateFeasibility(problem.qubo, problem.obj_part_qubo, problem.offset, state)
-    @printf("\t%s\t\t%7.3f%%        %+.3f\t\t  %s\n", state, 100*pop, energy, feasibility)
-    #@printf("\t%s\t\t%.6f\t\t%+.3f\n", state, pop, energy)
-end
+# *** Save results to CSV file ***
+print("Saving results...")
+CSV.write(fn_dataframe, final_results; quotestrings=true)
+println("Done!")
 
-no_feas, no_sols, f_prob = FeasibilityPercentage(sorted_final_results, problem)
-no_ground, _, ground_prob = OptimalityPercentage(sorted_final_results, problem, problem.opt_energy)
+# *** Print some statistics to the terminal ***
+println("\n*** Most likely results ***")
+print(first(final_results, 8))
+println()
 
-@printf("Probability to reach feasible solution: %.6f\n", f_prob)
+no_feas   = nrow(final_results_feasible)
+no_sols   = nrow(final_results)
+no_ground = nrow(final_results_optimal)
+
+feas_prob   = sum(final_results_feasible.probability)
+ground_prob = sum(final_results_optimal.probability)
+
+@printf("Probability to reach feasible solution: %.6f\n", feas_prob)
 @printf("Probability to reach ground state: %.6f\n", ground_prob)
-
 println(".....................................................")
-
 println("Ground state solution:  ", problem.ground_states)
 @printf("Ground state energy: %.6f\n", problem.opt_energy)
 println("total n.o. solutions: ", no_sols)
 println("n.o. distinct ground states: ", no_ground)
 println("n.o. distinct feasible sols: ", no_feas)
-
-print("\n")
+println()
