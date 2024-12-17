@@ -26,6 +26,10 @@ s = ArgParseSettings("Solve a QUBO by explicit simulation of quantum annealing."
         nargs = '?'
         help = "problem name, used to set result file names"
         default = ""
+    "--initial-state"
+        arg_type = String
+        nargs = '?'
+        help = "bitstring giving the initial state"
     "--annealing-time", "-t"
         arg_type = Float64
         nargs = '?'
@@ -36,6 +40,18 @@ s = ArgParseSettings("Solve a QUBO by explicit simulation of quantum annealing."
         nargs = '?'
         help = "annealing schedule to follow, xslx format from D-Wave website"
         default = "./09-1273A-E_Advantage_system6_4_annealing_schedule.xlsx"
+    "--reverse-anneal-point"
+        arg_type = Float64
+        nargs = '?'
+        help = "Reverse anneal, sweep s from 1.0 -> p -> 1.0"
+    "--reverse-anneal-pause-frac"
+        arg_type = Float64
+        nargs = '?'
+        help = "Reverse anneal, fraction of time to wait at turnaround point"
+        default = 0
+    "--fast-anneal"
+        action = :store_true
+        help = "use 'Fast-Annealing Schedule' instead of 'Standard-Annealing Schedule'"
     "--solve-ame", "-s"
         action = :store_true
         help = "simulate using the adiabatic master equation"
@@ -45,6 +61,12 @@ s = ArgParseSettings("Solve a QUBO by explicit simulation of quantum annealing."
     "--plot-energies"
         action = :store_true
         help = "store a plot of the Ising Hamiltonian energies"
+    "--plot-schedule"
+        action = :store_true
+        help = "store a plot of the annealing schedule"
+    "--plot-populations"
+        action = :store_true
+        help = "store a plot of the state populations through the annealing process"
 end
 
 parsed_args = parse_args(ARGS, s)
@@ -55,6 +77,8 @@ end
 
 fn_energies    = isempty(parsed_args["name"]) ? "IsingEnergies.pdf" : parsed_args["name"] * "_IsingEnergies.pdf"
 fn_populations = isempty(parsed_args["name"]) ? "FinalPopulations.pdf" : parsed_args["name"] * "_FinalPopulations.pdf"
+fn_schedule    = isempty(parsed_args["name"]) ? "Schedule.pdf" : parsed_args["name"] * "_Schedule.pdf"
+fn_remapfrac   = isempty(parsed_args["name"]) ? "Remapping.pdf" : parsed_args["name"] * "_Remapping.pdf"
 fn_dataframe   = isempty(parsed_args["name"]) ? "FinalData.csv" : parsed_args["name"] * "_FinalData.csv"
 
 ###
@@ -90,19 +114,72 @@ function QUBO2Ising(qubo_dict, Nq; sparse=false)
     Hf
 end
 
-
-# Set up Hamiltonian
+# Set up Annealing schedule
 print("Setting up annealing schedule...")
-schedule = AnnealingSchedule(parsed_args["annealing-schedule"])
+schedule = AnnealingSchedule(parsed_args["annealing-schedule"], parsed_args["fast-anneal"])
+
+remap_s = (s) -> s
+if parsed_args["reverse-anneal-point"] != nothing
+    pause_point = parsed_args["reverse-anneal-point"]
+    pause_time  = parsed_args["reverse-anneal-pause-frac"]
+
+    @assert (pause_point >= 0 && pause_point < 1) "Reverse annealing turnaround point must be between 0 and 1"
+    @assert (pause_time >= 0 && pause_time < 1) "Reverse annealing pause time must be between 0 and 1"
+
+    function lerp(x::Float64, x0::Float64, y0::Float64, x1::Float64, y1::Float64)
+        t = (x - x0) / (x1 - x0)
+        return (1-t) * y0 + t * y1
+    end
+
+    tps = 0.5 - 0.5*pause_time
+    tpe = 0.5 + 0.5*pause_time
+    remap_s = function(t)
+        if t < tps              # Region one, drop linearly from 1.0 to pause_point
+            return lerp(t, 0.0, 1.0, tps, pause_point)        
+        elseif t < tpe          # Region two, wait at pause point
+            return pause_point
+        else                    # Region three, rise linearly from pause_point to 1.0
+            return lerp(t, tpe, pause_point, 1.0, 1.0)
+        end
+    end
+end
+
+if parsed_args["plot-schedule"]
+    # Plot the annealing schedule
+    print("Plotting schedule...")
+    plot(
+         schedule.s_range, 
+         [schedule.A_values, schedule.B_values], 
+         label=["A(s)" "B(s)"], 
+         lw=2
+    )
+    title!("Annealing Schedule")
+    xlabel!("s")
+    ylabel!("Coupling (GHz)")
+    savefig(fn_schedule)
+
+    print("Plotting fraction...")
+    plot(
+         schedule.s_range,
+         remap_s.(schedule.s_range),
+         label="Remapped s",
+         lw=2
+    )
+    title!("Remapped annealing paramter")
+    xlabel!("s")
+    ylabel!("s'")
+    savefig(fn_remapfrac)
+end
 println("Done!")
 
+# Set up Hamiltonian
 print("Setting up Hamiltonian...")
 if parsed_args["sparse"]
     print("Hamiltonian is SPARSE...")
     H = SparseHamiltonian(
         [
-            (s) -> schedule.A_func(s),
-            (s) -> schedule.B_func(s)
+             (s) -> schedule.A_func(remap_s(s)),
+             (s) -> schedule.B_func(remap_s(s))
         ],
         [
             (-1/2) * standard_driver(num_qubits; sp=true),
@@ -114,8 +191,8 @@ else
     print("Hamiltonian is DENSE...")
     H = DenseHamiltonian(
         [
-            (s) -> schedule.A_func(s),
-            (s) -> schedule.B_func(s)
+             (s) -> schedule.A_func(remap_s(s)),
+             (s) -> schedule.B_func(remap_s(s))
         ],
         [
             (-1/2) * standard_driver(num_qubits),
@@ -138,6 +215,11 @@ println("Done!")
 # Annealing problem
 print("Setting up annealing problem for solver...")
 ψi = (1 / sqrt(2^num_qubits)) * ones(Complex{Float64}, 2^num_qubits)
+if parsed_args["initial-state"] != nothing
+    @assert (length(parsed_args["initial-state"]) == num_qubits) "State bitstring must match number of qubits"
+    ψi = q_translate_state(parsed_args["initial-state"])
+end
+
 annealing = Annealing(
     H,
     ψi;
@@ -147,7 +229,7 @@ annealing = Annealing(
 println("Done!")
 
 ###
-# Solve the problem with the unitary solver and an annealing time of 10ns (for testing)
+# Solve the problem 
 ###
 function SolveWithSE(annealing_problem, annealing_time, ss)
     # Vern7 appears to be fastest on the largest problem, only a tiny bit faster than Vern6
@@ -205,19 +287,21 @@ end
 # *** Do the actual simulation ***
 solution_pops = parsed_args["solve-ame"] ? SolveWithAME(annealing, tf, s_range) : SolveWithSE(annealing, tf, s_range)
 
-print("Plotting populations...")
-plot(
-    s_range, 
-    transpose(solution_pops),
-    linewidth=1,
-    legend=false
-)
-ylims!(0, 1)
-title!("Population Evolution")
-xlabel!("s")
-ylabel!("Population")
-savefig(fn_populations)
-println("Done!")
+if parsed_args["plot-populations"]
+    print("Plotting populations...")
+    plot(
+        s_range, 
+        transpose(solution_pops),
+        linewidth=1,
+        legend=false
+    )
+    ylims!(0, 1)
+    title!("Population Evolution")
+    xlabel!("s")
+    ylabel!("Population")
+    savefig(fn_populations)
+    println("Done!")
+end
 
 final_results = DataFrame(
     state = String[],

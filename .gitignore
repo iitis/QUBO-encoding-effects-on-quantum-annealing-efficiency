@@ -10,3 +10,8 @@ text/main.fdb_latexmk
 text/main.synctex.gz
 text/.main.tex.swp
 text/.references.bib.swp
+/src/QUBO4JobShop/JobShop_QUBO/__pycache__
+*.swp
+/src/AMESimulations/*.pdf
+/src/AMESimulations/*.csv
+/src/QUBO4JobShop/QUBOs/*.pkl
