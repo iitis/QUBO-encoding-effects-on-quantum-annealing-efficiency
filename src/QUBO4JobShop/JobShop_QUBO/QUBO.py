@@ -52,6 +52,8 @@ class Implement_QUBO():
     """ class of the QUBO formulation  Q[inds] = Q[i,i'] """
     def __init__(self, JS, psum:float, ppair:float):
         """ initialize  with penalty values and the objective function """
+        assert psum > 0
+        assert ppair > 0
         self.psum = psum
         self.ppair = ppair
         self.obj_terms = {}
