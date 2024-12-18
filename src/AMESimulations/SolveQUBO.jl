@@ -31,7 +31,7 @@ s = ArgParseSettings("Solve a QUBO by explicit simulation of quantum annealing."
         nargs = '?'
         help = "bitstring giving the initial state"
     "--annealing-time", "-t"
-        arg_type = Float64
+        arg_type = Union{Float64, Int}
         nargs = '?'
         help = "annealing time in ns"
         default = 10
@@ -41,11 +41,11 @@ s = ArgParseSettings("Solve a QUBO by explicit simulation of quantum annealing."
         help = "annealing schedule to follow, xslx format from D-Wave website"
         default = "./09-1273A-E_Advantage_system6_4_annealing_schedule.xlsx"
     "--reverse-anneal-point"
-        arg_type = Float64
+        arg_type = Union{Float64, Int}
         nargs = '?'
         help = "Reverse anneal, sweep s from 1.0 -> p -> 1.0"
     "--reverse-anneal-pause-frac"
-        arg_type = Float64
+        arg_type = Union{Float64, Int}
         nargs = '?'
         help = "Reverse anneal, fraction of time to wait at turnaround point"
         default = 0
