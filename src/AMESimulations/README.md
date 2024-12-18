@@ -19,5 +19,6 @@ Command line options exist to:
  - ```--solve-ame```: Switch to simulations using the adiabatic master equation
  - ```--plot-energies```: Output a plot of the eigenenergies of the Ising model as a function of the annealing paramter
  - ```--annealing-time```: Set the annealing time
+ - ```--sparse```: Use sparse matrix representation in computation of ... 
 
 Use ```julia SolveQUBO.jl --help``` to see details.
