@@ -461,6 +461,67 @@ def test_spectrum_10qbits():
     assert qubo.is_feasible(sols[7]) == False
 
 
+def test_slpiting_spectrum():
+        JS = instance_4q()
+
+        # this is on the edge (ground either feasible or not)
+        qubo = Implement_QUBO(JS, psum = 0.5, ppair = 0.25)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=250, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+
+        xx = sorted(d, key = lambda x: qubo.compute_energy(x['sol']) )
+        k = 0
+        for x in xx[0:10]:
+            x = x['sol']
+            assert qubo.compute_energy(x) == -0.5
+            if qubo.is_feasible(x):
+                k += 1
+
+        assert 0 < k < 10
+
+        qubo = Implement_QUBO(JS, psum = 0.45, ppair = 0.225)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=250, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+
+        xx = sorted(d, key = lambda x: qubo.compute_energy(x['sol']) )
+        k = 0
+        for x in xx[0:10]:
+            x = x['sol']
+            assert qubo.compute_energy(x) == -0.45
+            if qubo.is_feasible(x):
+                k += 1
+
+        assert k == 0
+
+
+        
+        # ground state is feasible
+
+        qubo = Implement_QUBO(JS, psum = 0.6, ppair = 0.3)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=250, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+
+        xx = sorted(d, key = lambda x: qubo.compute_energy(x['sol']) )
+        k = 0
+        for x in xx[0:10]:
+            x = x['sol']
+            assert qubo.compute_energy(x) == -0.7
+            if qubo.is_feasible(x):
+                k += 1
+
+        assert k == 10
+
+
+
     
 
 
