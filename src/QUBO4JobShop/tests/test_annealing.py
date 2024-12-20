@@ -464,7 +464,7 @@ def test_spectrum_10qbits():
 def test_slpiting_spectrum():
         JS = instance_4q()
 
-        # this is on the edge (ground either feasible or not)
+        # part of ground is feasible and part not
         qubo = Implement_QUBO(JS, psum = 0.5, ppair = 0.25)
         qubo.make_QUBO()
 
@@ -482,6 +482,7 @@ def test_slpiting_spectrum():
 
         assert 0 < k < 10
 
+        # groiund not feasible
         qubo = Implement_QUBO(JS, psum = 0.45, ppair = 0.225)
         qubo.make_QUBO()
 
@@ -500,7 +501,6 @@ def test_slpiting_spectrum():
         assert k == 0
 
 
-        
         # ground state is feasible
 
         qubo = Implement_QUBO(JS, psum = 0.6, ppair = 0.3)
@@ -514,11 +514,59 @@ def test_slpiting_spectrum():
         k = 0
         for x in xx[0:10]:
             x = x['sol']
+            assert qubo.compute_objective(x) == 0.5
             assert qubo.compute_energy(x) == -0.7
             if qubo.is_feasible(x):
                 k += 1
 
         assert k == 10
+
+
+        JS = instance_5q()
+
+        # part of ground feasible and part not
+        qubo = Implement_QUBO(JS, psum = 0.25, ppair = 0.125)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=250, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+
+        xx = sorted(d, key = lambda x: qubo.compute_energy(x['sol']) )
+        k = 0
+        for x in xx[0:10]:
+            x = x['sol']
+            print(qubo.is_feasible(x))
+            assert qubo.compute_energy(x) == -0.25
+            if qubo.is_feasible(x):
+                k += 1
+
+        assert 0 < k < 10
+
+
+
+
+        JS = instance_0() # 10 -qbits
+
+        # part of ground feasible and part not
+        qubo = Implement_QUBO(JS, psum = 0.5, ppair = 0.25)
+        qubo.make_QUBO()
+
+        Q = qubo.qubo_terms
+        sampleset = solve_on_DWave(Q, no_runs=250, real = False, hyb = False, at = 0.)
+        d = dict_of_solutions(qubo, sampleset.record)
+
+        xx = sorted(d, key = lambda x: qubo.compute_energy(x['sol']) )
+        k = 0
+        for x in xx[0:10]:
+            x = x['sol']
+            assert qubo.compute_energy(x) == -1.0
+            if qubo.is_feasible(x):
+                k += 1
+
+        assert 0 < k < 10
+
+
 
 
 
