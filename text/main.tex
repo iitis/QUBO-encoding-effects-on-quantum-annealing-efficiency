@@ -39,6 +39,7 @@
 \maketitle
 
 \section{The JobShop problem}
+\label{sec:jsp}
 
 Referring to scheduling theory~\cite{pinedo2012scheduling} we consider the \emph{JobShop} $(J_m)$ problem with release and due constraints ($r_i d_i$), where the objective is total weighted tardiness $\sum_j w_j T_j$, namely:
 \begin{equation}
@@ -172,6 +173,23 @@ We could ask:
 \end{itemize}
 
 This could also expand to include different problem encodings, for example comparing precedence variables against the discrete approach to time-stepping used in the trains work.
+
+\subsection{QUBO spectrum variation}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figs/dplots_sum.pdf}
+    \includegraphics[width=0.95\textwidth]{figs/hists_sum.pdf}
+    \caption{Solution energies as the sum penalty $p_{\rm sum}$ is varied for an 8 qubit instance of the problem defined in Sec.~\ref{sec:jsp}. Feasible solutions are marked in red in the histograms.}
+    \label{fig:asdf}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figs/dplots_pair.pdf}
+    \includegraphics[width=0.95\textwidth]{figs/hists_pair.pdf}
+    \caption{Solution energies as the pair penalty $p_{\rm pair}$ is varied for an 8 qubit instance of the problem defined in Sec.~\ref{sec:jsp}. Feasible solutions are marked in red in the histograms.}
+    \label{fig:asdf}
+\end{figure}
 
 \section{Main question}
 
