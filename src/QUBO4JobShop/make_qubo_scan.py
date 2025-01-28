@@ -155,6 +155,11 @@ if __name__ == "__main__":
         default=20.,
     )
 
+    parser.add_argument(
+        "--log",
+        help="logarithmic spacing",
+        action='store_true'
+    )
 
     args = parser.parse_args()
 
@@ -175,9 +180,18 @@ if __name__ == "__main__":
         
     if args.no_qbits == 10:
         instance = instance_10q()
-         
-    psum_range = numpy.linspace(args.psum_min, args.psum_max, args.no_points)
-    ppair_range = numpy.linspace(args.ppair_min, args.ppair_max, args.no_points)
+    
+    file = None
+    psum_range = None
+    ppair_range = None
+    if args.log:
+        file = f"QUBOs/many_instances_qbits{args.no_qbits}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}_logspace.pkl"
+        psum_range = numpy.logspace(numpy.log10(args.psum_min), numpy.log10(args.psum_max), args.no_points)
+        ppair_range = numpy.logspace(numpy.log10(args.ppair_min), numpy.log10(args.ppair_max), args.no_points)
+    else:
+        file = f"QUBOs/many_instances_qbits{args.no_qbits}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}.pkl"
+        psum_range = numpy.linspace(args.psum_min, args.psum_max, args.no_points)
+        ppair_range = numpy.linspace(args.ppair_min, args.ppair_max, args.no_points)
 
     all_qubos = []
     for (psum, ppair) in itertools.product(psum_range, ppair_range):
@@ -186,7 +200,7 @@ if __name__ == "__main__":
 
         all_qubos.append((psum, ppair, d))
 
-    file = f"QUBOs/many_instances_qbits{args.no_qbits}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}.pkl"
+    
 
     with open(file, 'wb') as fp:
         pickle.dump(all_qubos, fp)

@@ -9,7 +9,7 @@ def load_pickle(path):
         return pickle.load(inf)
 """
 
-load_pydict_pkl = py"load_pickle"
+load_pyobj_pkl = py"load_pickle"
 
 struct QUBOProblem
     opt_objective::Float64
@@ -19,9 +19,7 @@ struct QUBOProblem
     qubo::Dict{Tuple{Int64, Int64}, Float64}
     obj_part_qubo::Dict{Tuple{Int64, Int64}, Float64}
 
-    function QUBOProblem(path::String)
-        qubo_pydict = load_pydict_pkl(path)
-
+    function QUBOProblem(qubo_pydict::Dict{Any, Any})
         opt_objective = qubo_pydict["ground_obj"]
         opt_energy = qubo_pydict["ground_energy"]
         offset = qubo_pydict["offset"]
@@ -31,6 +29,26 @@ struct QUBOProblem
 
         new(opt_objective, opt_energy, offset, ground_states, qubo, obj_part_qubo)
     end
+end
+
+function LoadQUBOProblem(path::String)
+    qubo_pydict = load_pyobj_pkl(path)
+    return QUBOProblem(qubo_pydict)
+end
+
+function LoadManyQUBOs(path::String)
+    # List of QUBO dictionaries, type is Vector{Tuple{Float64, Float64, Dict{Any, Any}}}
+    pylist_qubos = load_pyobj_pkl(path)
+
+    qubo_list = Vector{@NamedTuple{psum::Float64, ppair::Float64, qubo::QUBOProblem}}()
+    for (py_psum, py_ppair, qubo_pydict) in pylist_qubos
+        push!(qubo_list, (
+            psum = py_psum,
+            ppair = py_ppair,
+            qubo = QUBOProblem(qubo_pydict)
+        ))
+    end
+    return qubo_list
 end
 
 function EvaluateQUBOEnergy(qubo::Dict{Tuple{Int64, Int64}, Float64}, state::String)
