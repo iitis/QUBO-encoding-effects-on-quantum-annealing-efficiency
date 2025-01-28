@@ -9,6 +9,7 @@
 \usepackage{natbib}
 \usepackage{hyperref}
 \usepackage{todonotes}
+\usepackage{siunitx}
 \usepackage[section]{placeins}
 
     % \setlength{\parindent}{0em}
@@ -282,6 +283,36 @@ E.g., maybe the fluctuation relations for the different underlying models transl
 Alternately, if the qualitative behavior of the efficiency is captured by a classical model, we could use that to check how the efficiency should behave for larger problems.
 
 This would be something to think about once the primary study has been done.
+
+\subsection{Numerical results}
+
+Before testing with the complete and computationally expensive adiabatic master equation simulation, we start with a simulation of the dynamics with no noise using the Schr\"odinger equation.
+We consider problem instances with 3, 4, or 5 qubits, and vary $p_{\rm sum}$ and $p_{\rm pair}$ from 0.1 to 10 with 50 logarithmically-spaced steps.
+This totals 2500 QUBOs to solve for each qubit count, each of which was solved using the noiseless simulator five times, with annealing times of \SI{10}{\nano\second} to $\SI{50}{\nano\second}$ in equally-spaced steps. 
+While these annealing times are very short, for such tiny problems with no noise the results demonstrate that they are sufficient.
+
+Figures \ref{fig:SimRes4qb}, \ref{fig:SimRes5qb}, and \ref{fig:SimRes6qb} show the results of these simulations.
+Two contour plots are given for each annealing time, showing the probability of the annealing process yielding either an optimal or a non-optimal but still feasible solution for each choice of penalty parameters.
+Also shown is a contour plot of the mean solution energy, with no restrictions placed to ensure feasibility.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/cplots_4qb_10to50.pdf}
+    \caption{Results of noiseless simulations of the solution of 4 qubit problem instances with varying penalty parameters, $p_{\rm sum}$ along the horizontal axis and $p_{\rm pair}$ the vertical. The rows (top to bottom) correspond to different annealing times: \SI{10}{\nano\second}, \SI{20}{\nano\second}, ..., \SI{50}{\nano\second}. On each contour plot, the best set of parameters is marked with an ``X''.}
+    \label{fig:SimRes4qb}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/cplots_5qb_10to50.pdf}
+    \caption{Results of noiseless simulations of the solution of 5 qubit problem instances with varying penalty parameters, $p_{\rm sum}$ along the horizontal axis and $p_{\rm pair}$ the vertical. The rows (top to bottom) correspond to different annealing times: \SI{10}{\nano\second}, \SI{20}{\nano\second}, ..., \SI{50}{\nano\second}. On each contour plot, the best set of parameters is marked with an ``X''.}
+    \label{fig:SimRes5qb}
+\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/cplots_6qb_10to50.pdf}
+    \caption{Results of noiseless simulations of the solution of 6 qubit problem instances with varying penalty parameters, $p_{\rm sum}$ along the horizontal axis and $p_{\rm pair}$ the vertical. The rows (top to bottom) correspond to different annealing times: \SI{10}{\nano\second}, \SI{20}{\nano\second}, ..., \SI{50}{\nano\second}. On each contour plot, the best set of parameters is marked with an ``X''.}
+    \label{fig:SimRes6qb}
+\end{figure}
 
 \section{Quantum annealing experiments}
 
