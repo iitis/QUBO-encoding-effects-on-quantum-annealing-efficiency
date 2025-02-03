@@ -131,7 +131,7 @@ if parsed_args["plot-populations"]
     println("Done!")
 end
 
-final_results = ExtractFinalResults(solution_pops)
+final_results = ExtractFinalResults(problem, solution_pops)
 
 # *** Save results to CSV file ***
 print("Saving results...")

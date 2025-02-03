@@ -185,11 +185,11 @@ if __name__ == "__main__":
     psum_range = None
     ppair_range = None
     if args.log:
-        file = f"QUBOs/many_instances_qbits{args.no_qbits}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}_logspace.pkl"
+        file = f"QUBOs/many_instances_qbits{args.no_qbits}_npts{args.no_points}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}_logspace.pkl"
         psum_range = numpy.logspace(numpy.log10(args.psum_min), numpy.log10(args.psum_max), args.no_points)
         ppair_range = numpy.logspace(numpy.log10(args.ppair_min), numpy.log10(args.ppair_max), args.no_points)
     else:
-        file = f"QUBOs/many_instances_qbits{args.no_qbits}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}.pkl"
+        file = f"QUBOs/many_instances_qbits{args.no_qbits}_npts{args.no_points}_ppair{args.ppair_min}_{args.ppair_max}_psum{args.psum_min}_{args.psum_max}.pkl"
         psum_range = numpy.linspace(args.psum_min, args.psum_max, args.no_points)
         ppair_range = numpy.linspace(args.ppair_min, args.ppair_max, args.no_points)
 
