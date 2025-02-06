@@ -37,6 +37,18 @@
 \author{Krzysztof Domino}
 \affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
 \date{\today}
+
+\begin{abstract}
+Quantum annealing is an important paradigm of quantum computing which can be used to solve a wide range of problems.
+This is done by transforming any given problem into the form of a quadratic unconstrained binary optimization (QUBO) problem. 
+Unfortunately, any given problem can typically be encoded in QUBO form in a huge variety of ways, none of which are obviously superior to any other.
+While each QUBO formulation produces a problem which encodes the correct solution, the imperfections of current NISQ-era devices mean that some encodings are more likely to yield correct results than others.
+Selecting optimal encodings is extremely difficult, and so in practice heuristics are used to construct encodings which are hoped to perform reasonably well.
+In this work, we focus on a specific job shop scheduling problem and examine how different encodings of this problem in QUBO form lead to different behavior when solved with quantum annealing. 
+Through a combination of experiments on a D-Wave device and numerical simulations of the annealing process, we study the connection between the accuracy of the solution and the efficiency of the annealer itself interpreted as a thermodynamic machine. 
+In doing so, we shed light on the question of what it means for a specific QUBO encoding to be easier or harder to solve with quantum annealing. 
+\end{abstract}
+
 \maketitle
 
 \section{The JobShop problem}
