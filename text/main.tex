@@ -326,6 +326,17 @@ Also shown is a contour plot of the mean solution energy, with no restrictions p
     \label{fig:SimRes6qb}
 \end{figure}
 
+We can also use the same type of simulations to see how impactful noise is on the annealing process. 
+Figure \ref{fig:SimResSEvsAME} shows this type of comparison, where the behavior of the two types of dynamics are compared as a function of the penalty parameters with a 4 qubit problem and a fixed annealing time of \SI{20}{\nano\second}.
+In this scenario, we find that in the noiseless case the highest probability of achieving the optimal solution observed is 95.8\%, dropping to 89.8\% with the introduction of noise.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/cplots_4qb_20ns_SEvsAME.pdf}
+    \caption{Results of noiseless (top) and noisy (bottom) simulations of the solution of 4 qubit problem instances with varying penalty parameters, $p_{\rm sum}$ along the horizontal and $p_{\rm pair}$ along the vertical. In both cases, the annealing time was fixed to \SI{20}{\nano\second}.}
+    \label{fig:SimResSEvsAME}
+\end{figure}
+
 \section{Quantum annealing experiments}
 
 Exactly what might be worth testing on the real device will depend on what the simulations show.
