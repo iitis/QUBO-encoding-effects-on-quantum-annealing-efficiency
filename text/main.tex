@@ -13,7 +13,8 @@
 \usepackage[section]{placeins}
 
     % \setlength{\parindent}{0em}
-
+    
+    \DeclareMathOperator\arctanh{arctanh}
     \newcommand{\cbqty}[1]{\left\{#1\right\}}
     \newcommand{\nts}[1]{\textcolor{blue}{#1}}
     \newcommand{\fixme}[1]{\textcolor{red}{#1}}
@@ -337,6 +338,127 @@ In this scenario, we find that in the noiseless case the highest probability of 
     \includegraphics[width=0.99\textwidth]{figs/cplots_4qb_20ns_SEvsAME.pdf}
     \caption{Results of noiseless (top) and noisy (bottom) simulations of the solution of 4 qubit problem instances with varying penalty parameters, $p_{\rm sum}$ along the horizontal and $p_{\rm pair}$ along the vertical. In both cases, the annealing time was fixed to \SI{20}{\nano\second}.}
     \label{fig:SimResSEvsAME}
+\end{figure}
+
+\section{Extracting thermodynamic quantities from simulations}
+
+The simulation of the D-Wave machine is built around a noisy simulation of the adiabatic master equation \cite{Albash2012} with the annealing Hamiltonian,
+\begin{align}
+    H(t)
+    &= A[s(t)] H_{\rm mix} + B[s(t)] H_{\rm cost}
+    \nonumber\\
+    &= A[s(t)] \pqty{-\frac{1}{2}\sum_{i} \sigx_i} + B[s(t)] \pqty{\frac{1}{2}
+            \sum_{ij} j_{ij} \sigz_i\sigz_j + \sum_{i} h_{i} \sigz_i
+        }
+    ,
+\end{align}
+where the coefficients $A(s), B(s)$ describe the (fixed) annealing schedule implemented on the machine and where the coefficients $j_{ij}, h_{i}$ encode the optimization problem.
+The standard mode of operation of the simulation corresponds with the typical forward annealing process with an annealing time $\tau$, where $s(t) = t/\tau$ and where the initial state is taken to be a thermal state in the basis of the mixer Hamiltonian,
+\begin{align}
+    \rho(0) = \frac{\exp(-\beta H_{\rm mix})}{\tr\bqty{\exp(-\beta H_{\rm mix})}}
+    ,
+\end{align}
+with a configurable inverse temperature $\beta$.
+The simulation also supports the reverse annealing protocol, where the annealing parameter $s$ starts at one, drops linearly to some intermediate value, then potentially after a delay returns linearly to one. 
+In this case, the initial state is taken to be a thermal state of the cost Hamiltonian,
+\begin{align}
+    \rho(0) = \frac{\exp(-\beta H_{\rm cost})}{\tr\bqty{\exp(-\beta H_{\rm cost})}}
+    .
+\end{align}
+
+The simulation divides the annealing time into a series of small intervals of some fixed $\delta t = \tau/N$ and integrates the equations of motion along these intervals. 
+The output is a list of density matrices giving the state of the system at each of the $N$ time-steps, 
+\begin{align}
+    \{
+        \rho(t_0), \rho(t_1), \rho(t_2), \dots, \rho(t_N)
+    \}
+    ,
+\end{align}
+with $t_0 = 0$ and $t_N = T$.
+From this record of the system state throughout the dynamics, it is possible to reconstruct all the thermodynamic quantities of interest.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/simres.pdf}
+    \caption{Example AME simulation of a 4-qubit problem, with a \SI{10}{\nano\second} annealing time. The blue curve in the left panel gives the population in the state $\ket{1001}$, corresponding to the ground state of the cost Hamiltonian. The probability of measuring this state is 78.2\%.}
+    \label{fig:SimResAME}
+\end{figure}
+
+\subsection{Thermodynamic Uncertainty Relations}
+
+Experiments performed on real D-Wave machines do not have access to the quantum state, only to measurements of the final state in the $Z$-basis (equivalently, in the basis of the cost Hamiltonian).
+The best way to access thermodynamic information on these real devices is through reverse annealing, sampling the initial state from a thermal distribution with some fixed temperature $\beta$ and measuring the change in energy ($\Delta E$) for each shot.
+These measurement results are then used as inputs to thermodynamic uncertainty relations, providing bounds on the entropy production, work, and heat as
+\begin{align}
+    \ev{\Sigma} &\ge 2 g\pqty{\frac{\ev{\Delta E}}{\sqrt{\ev{\Delta E^2}}}}
+    \\
+    -\ev{Q} &\ge \frac{2}{\beta_{\rm env}} g\pqty{\frac{\ev{\Delta E}}{\sqrt{\ev{\Delta E^2}}}} - \frac{\beta}{\beta_{\rm env}}\ev{\Delta E}
+    \\
+    \ev{W} &\ge \frac{2}{\beta_{\rm env}} g\pqty{\frac{\ev{\Delta E}}{\sqrt{\ev{\Delta E^2}}}} + \bqty{1 - \frac{\beta}{\beta_{\rm env}}}\ev{\Delta E}
+    ,
+\end{align}
+with $g(x) = x \arctanh(x)$
+
+Numerically, we can compute these expectation values
+\begin{align}
+    \ev{\Delta E} &= \ev{E(\tau) - E(0)} = \ev{E(\tau)} - \ev{E(0)}
+    \\
+    \ev{\Delta E^2} &= \ev{E(\tau)^2 + E(0)^2 - 2E(\tau)E(0)} = \ev{E(\tau)^2} + \ev{E(0)^2} - 2\ev{E(\tau)}\ev{E(0)}
+\end{align}
+directly from the time-dependent Hamiltonian combined with the initial and final states of the simulation, giving
+\begin{align}
+    \ev{\Delta E} &= \tr\bqty{H(\tau)\rho(\tau)} - \tr\bqty{H(0)\rho(\tau)}
+    \\
+    \ev{\Delta E^2} &= \tr\bqty{H(\tau)^2\rho(\tau)} + \tr\bqty{H(0)^2\rho(0)} - 2\tr\bqty{H(\tau)\rho(\tau)}\tr\bqty{H(0)\rho(0)}
+\end{align}
+With this, we can compute thermodynamic uncertainty relations from our numerical experiments as a point of comparison to experiments with real machines.
+
+\subsection{Time-dependent Fluxes}
+
+With the time-dependent state of the system, we can estimate the rates of change of the entropy, heat, and work in each time-step easily.
+Most straightforward is the entropy production, which we approximate by simply computing the change in the entropy of the density operator across each time-step:
+\begin{align}
+    \Sigma(t_k)\delta t \approx -\tr\bqty{\rho(t_{k+1})\log\rho(t_{k+1})} + \tr\bqty{\rho(t_k)\log\rho(t_k)}
+\end{align}
+Estimating the heat and work is slightly more complex. 
+Given $\rho(t_k)$ and $\rho(t_{k+1})$, we can write 
+\begin{align}
+    \rho(t_{k+1}) = \mathcal{E}_{t_{k+1}, t_k}\bqty{\rho(t_{k})}
+    .
+\end{align}
+We can compute the energy at the beginning and end of this interval using the corresponding Hamiltonian at the associated times,
+\begin{align}
+    \Delta E(t_{k+1}, t_k) = \tr\bqty{H(t_{k+1})\rho(t_{k+1})} - \tr\bqty{H(t_k)\rho(t_k)}
+    ,
+\end{align}
+however decomposing this change in energy into work and heat flow requires a bit of work.
+If we assume that the time interval $\delta t$ is sufficiently short, then we can approximately factor this quantum map into the composition of two quantum maps,
+\begin{align}
+    \rho(t_{k+1}) \approx \mathcal{V}_{t_{k+1},t_k}\circ\mathcal{U}_{t_{k+1},t_k}\bqty{\rho(t_{k})}
+    .
+\end{align}
+The quantum map $\mathcal{U}$ represents the unitary evolution of the system under the time-dependent Hamiltonian,
+\begin{align}
+    \mathcal{U}_{t_{k+1},t_k}\bqty{\rho(t_{k})} = \exp\bqty{-i\int_{t_k}^{t_k+1} \dd{t'} H(t')} \rho(t_{k}) \exp\bqty{i\int_{t_k}^{t_k+1} \dd{t'} H(t')}
+\end{align}
+The contribution of the noise is then collected into the quantum map $\mathcal{V}$, representing the propagator of the noise terms only of the adiabatic master equation \cite{Albash2012}.
+Similar to how one approaches fluctuation theorems, we can identify the change in energy due to the unitary map with the work (corresponding to the energetic cost of changing the annealing parameter) and the change in energy due to the noise with the heat (corresponding to energy exchanged with the environment).
+We can compute the work by explicitly taking $\rho(t_k)$ and evolving with the unitary propagator,
+\begin{align}
+    W(t_{k+1},t_k) = \tr\bqty{H(t_{k+1}) \mathcal{U}_{t_{k+1},t_k}\bqty{\rho(t_{k})}} - \tr\bqty{H(t_k)\rho(t_k)}
+    ,
+\end{align}
+in which case any discrepancy between the work and the change in energy must be due to heat exchanged with the environment,
+\begin{align}
+    Q(t_{k+1},t_k) = \Delta E(t_{k+1},t_{k}) - W(t_{k+1}, t_k)
+\end{align}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.99\textwidth]{figs/simdecompose.pdf}
+    \caption{Thermodynamic quantities extracted from the 4 qubit simulation discussed in Fig.~\ref{fig:SimResAME}.}
+    \label{fig:SimResAMEFluxes}
 \end{figure}
 
 \section{Quantum annealing experiments}
