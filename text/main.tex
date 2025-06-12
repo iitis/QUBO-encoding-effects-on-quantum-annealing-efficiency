@@ -54,6 +54,35 @@ In doing so, we shed light on the question of what it means for a specific QUBO 
 
 \maketitle
 
+
+\section{Main question - research goal}
+
+When we vary the hyperparameters of our optimization problems (binary encoding, penalty parameters, annealing details, etc.), what happens to the efficiency of the optimization process? 
+Can this tell us anything about how to choose these hyperparameters, or show us some interesting differences e.g. in the split vs. overlapping cases?
+
+These questions are equally valid for any optimization process, there is nothing special about quantum annealing in this regard. 
+In principle, any optimizer can be considered as a black box which takes in some amount of energy to perform the optimization, and produces a solution alongside some amount of waste heat.
+This can always be understood as a thermodynamic process, and we may always compute or estimate the quantity of energy input, wasted, or directed to the output, as well as the entropy production, etc.
+Therefore we could compute the thermodynamic efficiency of any optimizer.
+
+It may be a good idea to see if there is some classical optimizer or classical annealing architecture which can be simulated which allows the efficiency to be computed which is computationally simpler than quantum annealing. 
+This would serve two uses, firstly and most obviously starting with an easier case will be easier, and secondly we would then have the ability to compare our eventual results for quantum annealing to a classical optimization. 
+Whether or not any given QUBO problem is dependent on which solver is used, and there is some intuition that some problems which are difficult for classical solvers may not be so difficult for a quantum annealer, and vice versa. 
+This is then probably also true for the thermodynamic efficiency of the solvers, there are likely some QUBOs which can be efficiently solved on a quantum annealer that are especially inefficient on a classical solver, as well as some QUBOs with the opposite property.
+It would be interesting to see if this is true, and assuming it is to see if there is a relationship between which solvers are more efficient and which are more effective.
+
+One place we might start is with one of the classical annealing models which have been tested against the D-Wave machines to try to demonstrate that they are actually quantum annealers. 
+For example, a model of classical annealing which works by using classical 3D vectors instead of qubits has been tested against the D-Wave machine several times, e.g. in Ref.~\cite{Boixo2014}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.66\textwidth]{figs/nphys2900_Fig1ad.pdf}
+	\caption{(Taken from figure 1 of Ref.~\cite{Boixo2014}) Success probabilities for solving 1000 problems each with 108 qubits using (a) the D-Wave One machine and (d) a classical annealing model where the quantum spins are replaced with classical $O(3)$ spins. Both distributions are bimodal showing that some problems are easy and some are hard, but not all problems hard for the classical model appear hard for the quantum annealer. That work also provides comparisons to simulated annealing -- which gives completely different results and to simulated quantum annealing (different from a simulation of a quantum annealer) -- which gives very similar results to quantum annealing.}
+	\label{fig:BoixoDWSD}
+\end{figure}
+The behavior of this model is similar to but not identical to that of quantum annealing, and the comparison [see Fig.~\ref{fig:BoixoDWSD}] does appear to support the idea that some problems are only hard for certain solvers. 
+
+
+
 \section{The JobShop problem}
 \label{sec:jsp}
 
@@ -206,32 +235,6 @@ This could also expand to include different problem encodings, for example compa
     \caption{Solution energies as the pair penalty $p_{\rm pair}$ is varied for an 8 qubit instance of the problem defined in Sec.~\ref{sec:jsp}. Feasible solutions are marked in red in the histograms.}
     \label{fig:asdf}
 \end{figure}
-
-\section{Main question}
-
-When we vary the hyperparameters of our optimization problems (binary encoding, penalty parameters, annealing details, etc.), what happens to the efficiency of the optimization process? 
-Can this tell us anything about how to choose these hyperparameters, or show us some interesting differences e.g. in the split vs. overlapping cases?
-
-These questions are equally valid for any optimization process, there is nothing special about quantum annealing in this regard. 
-In principle, any optimizer can be considered as a black box which takes in some amount of energy to perform the optimization, and produces a solution alongside some amount of waste heat.
-This can always be understood as a thermodynamic process, and we may always compute or estimate the quantity of energy input, wasted, or directed to the output, as well as the entropy production, etc.
-Therefore we could compute the thermodynamic efficiency of any optimizer.
-
-It may be a good idea to see if there is some classical optimizer or classical annealing architecture which can be simulated which allows the efficiency to be computed which is computationally simpler than quantum annealing. 
-This would serve two uses, firstly and most obviously starting with an easier case will be easier, and secondly we would then have the ability to compare our eventual results for quantum annealing to a classical optimization. 
-Whether or not any given QUBO problem is dependent on which solver is used, and there is some intuition that some problems which are difficult for classical solvers may not be so difficult for a quantum annealer, and vice versa. 
-This is then probably also true for the thermodynamic efficiency of the solvers, there are likely some QUBOs which can be efficiently solved on a quantum annealer that are especially inefficient on a classical solver, as well as some QUBOs with the opposite property.
-It would be interesting to see if this is true, and assuming it is to see if there is a relationship between which solvers are more efficient and which are more effective.
-
-One place we might start is with one of the classical annealing models which have been tested against the D-Wave machines to try to demonstrate that they are actually quantum annealers. 
-For example, a model of classical annealing which works by using classical 3D vectors instead of qubits has been tested against the D-Wave machine several times, e.g. in Ref.~\cite{Boixo2014}.
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.66\textwidth]{figs/nphys2900_Fig1ad.pdf}
-    \caption{(Taken from figure 1 of Ref.~\cite{Boixo2014}) Success probabilities for solving 1000 problems each with 108 qubits using (a) the D-Wave One machine and (d) a classical annealing model where the quantum spins are replaced with classical $O(3)$ spins. Both distributions are bimodal showing that some problems are easy and some are hard, but not all problems hard for the classical model appear hard for the quantum annealer. That work also provides comparisons to simulated annealing -- which gives completely different results and to simulated quantum annealing (different from a simulation of a quantum annealer) -- which gives very similar results to quantum annealing.}
-    \label{fig:BoixoDWSD}
-\end{figure}
-The behavior of this model is similar to but not identical to that of quantum annealing, and the comparison [see Fig.~\ref{fig:BoixoDWSD}] does appear to support the idea that some problems are only hard for certain solvers. 
 
 \section{Numerical studies of quantum annealing}
 
