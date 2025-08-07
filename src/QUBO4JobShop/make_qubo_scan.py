@@ -3,110 +3,8 @@ import argparse
 import numpy
 import itertools
 
-from JobShop_QUBO import Job, JobShop
-from JobShop_QUBO import Implement_QUBO
-from collections import OrderedDict
-
-
-def instance_4q():
-    """ 4 q-bits instance """
-    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
-    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
-
-    JS = JobShop([J1, J2])
-
-    scheds = [{1: {1: (1, 2)}, 2: {1: (2, 3)}}]
-
-    ground_obj = 0.5
-    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
-
-def instance_5q():
-    """ 4 q-bits instance """
-    J1 = Job(id = 1, m_p=OrderedDict({1:1}), release=1, due=3, weight=1.0)
-    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=4, weight=0.5)
-
-    JS = JobShop([J1, J2])
-
-    scheds = [{1: {1: (1, 2)}, 2: {1: (2, 3)}}]
-
-    ground_obj = 0.25
-    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
-
-
-def instance_6q():
-    """ 4 q-bits instance """
-    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
-    J2 = Job(id = 2, m_p=OrderedDict({1:1}), release=1, due=3, weight=0.5)
-
-    JS = JobShop([J1, J2])
-
-    scheds = [{1: {1: (1, 2), 2:(2,3)}, 2: {1: (2, 3)}}]
-
-    ground_obj = 0.5
-    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
-
-
-def instance_8q():
-    """ 4 q-bits instance """
-    J1 = Job(id = 1, m_p=OrderedDict({1:1, 2:1}), release=1, due=4, weight=1.0)
-    J2 = Job(id = 2, m_p=OrderedDict({1:1, 3:1}), release=1, due=4, weight=0.5)
-
-    JS = JobShop([J1, J2])
-
-    scheds = [{1: {1: (1, 2), 2: (2,3)}, 2: {1: (2, 3), 3:(3,4)}}]
-
-    ground_obj = 0.5
-    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
-
-
-def instance_10q():
-    """ 10 q-bits instance """
-    J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=7, weight=1.0)
-    J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=1.0)
-
-    JS = JobShop([J1, J2])
-
-    scheds = [{1: {1: (1, 3), 2: (4, 6)}, 2: {2: (2, 4)}},
-                        {1: {1: (2, 4), 2: (4, 6)}, 2: {2: (2, 4)}}
-    ]
-
-    ground_obj = 0.5
-    return {"js_problem":JS, "ground_scheds": scheds, "ground_obj": ground_obj}
-
-
-def create_QUBO_dict(args, instance, psum, ppair):
-        
-        JS = instance["js_problem"]
-
-        qubo = Implement_QUBO(JS, psum=psum, ppair=ppair)
-        qubo.make_QUBO()
-        assert qubo.qubo_variables.size == args.no_qbits
-
-        ground_states = []
-        # check the solution given
-        for sched in instance["ground_scheds"]:
-            x = qubo.schedule_2_x(sched)
-            ground_states.append(x)
-
-            # check feasibility
-            assert qubo.nonfeasible_pair_constraints(x) == 0
-            assert qubo.nonfeasible_sum_constraint(x) == 0
-            # check objective
-            assert qubo.compute_objective(x) == instance["ground_obj"]
-
-            offset = qubo.compute_energy_offset(JS)
-
-            energy = qubo.compute_objective(x) - offset
-
-        Q = qubo.qubo_terms
-
-        return {"qubo": Q,
-                "objective_part": qubo.obj_terms,
-                "ground_states": ground_states, 
-                "ground_obj": instance["ground_obj"], 
-                "ground_energy": energy, 
-                "offset": offset}
-
+from instances import create_QUBO_dict
+from instances import instance_4q, instance_5q, instance_6q, instance_8q, instance_10q
 
 if __name__ == "__main__":
 
@@ -195,7 +93,7 @@ if __name__ == "__main__":
 
     all_qubos = []
     for (psum, ppair) in itertools.product(psum_range, ppair_range):
-        d = create_QUBO_dict(args, instance, psum, ppair)
+        d = create_QUBO_dict(args.no_qbits, instance, psum, ppair)
         JS = instance["js_problem"]
 
         all_qubos.append((psum, ppair, d))
