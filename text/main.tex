@@ -1,16 +1,26 @@
-\documentclass[superscriptaddress, aps,notitlepage]{revtex4-2}
-\usepackage[utf8]{inputenc}
-\usepackage[margin=1in]{geometry}
-\usepackage{microtype}
-\usepackage{amsmath, amsthm, amssymb, amsfonts}
-\usepackage{physics}
-\usepackage{xcolor}
+\documentclass[aps,pra,amsmath,amssymb,amsfonts,lengthcheck,twocolumn,superscriptaddress]{revtex4-1}
+%
 \usepackage{graphicx}
-\usepackage{natbib}
-\usepackage{hyperref}
+\usepackage{subfigure}
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{verbatim}
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+\usepackage{epsf}
+\usepackage{color}
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue,urlcolor=blue]{hyperref}%
+\usepackage{xcolor}
+\usepackage{physics}
+\usepackage{dsfont}
+\usepackage{tikz}
+\usepackage{todonotes}
+\usepackage{multirow}
+\usepackage{xfrac}
+\usepackage{makecell}
+
+
 \usepackage{todonotes}
 \usepackage{siunitx}
-\usepackage[section]{placeins}
 
     % \setlength{\parindent}{0em}
     
@@ -23,23 +33,118 @@
     \newcommand{\sigy}{\sigma^y}
     \newcommand{\sigz}{\sigma^z}
 
+
+
+%
+%\newcommand{\bra}[1]{\left\langle #1\right|}
+%\newcommand{\ket}[1]{\left|#1\right\rangle}
+%\newcommand{\braket}[2]{\left\langle #1|#2\right\rangle}
+%\newcommand{\ketbrad}[1]{|#1\rangle\!\langle #1|}
+%\newcommand{\tr}[1]{\mathrm{tr}\left\{#1\right\}}
+\newcommand{\ptr}[2]{\mathrm{tr_{#1}}\left\{#2\right\}}
+\newcommand{\di}[1]{\mathrm{div}\left\{#1\right\}}
+\newcommand{\la}{\left\langle}
+\newcommand{\ra}{\right\rangle}
+\newcommand{\pd}{\partial}
+\newcommand{\de}[1]{\delta\left(#1\right)}
+\newcommand{\td}{\mathrm{d}}
+\newcommand{\ma}[1]{\max{\left\{#1\right\}}}
+\newcommand{\mi}[1]{\min{\left\{#1\right\}}}
+\newcommand{\etal}{\textit{et al. }}
+\newcommand{\e}[1]{\exp{\left(#1\right)}}
+\newcommand{\lo}[1]{\ln{\left(#1\right)}}
+\newcommand{\id}{\mathbb{I}}
+\newcommand{\com}[2]{\left[#1,\,#2\right]}
+\newcommand{\acom}[2]{\left\{#1,\,#2\right\}}
+\newcommand{\co}[1]{\cos{\left(#1\right)}}
+%\newcommand{\si}[1]{\sin{\left(#1\right)}}
+\newcommand{\sh}[1]{\sinh{\left(#1\right)}}
+\newcommand{\ch}[1]{\cosh{\left(#1\right)}}
+\newcommand{\shi}[1]{\mathrm{shi}{\left(#1\right)}}
+\newcommand{\cohi}[1]{\mathrm{chi}{\left(#1\right)}}
+\newcommand{\ct}[1]{\coth{\left(#1\right)}}
+\newcommand{\tah}[1]{\tanh{\left(#1\right)}}
+\newcommand{\bla}{bla\\bla\\bla\\bla\\bla}
+%\newcommand{\eqref}[1]{(\ref{#1})}
+\newcommand{\PR}{Phys. Rev.}
+\newcommand{\PRA}{Phys. Rev. A }
+\newcommand{\PRB}{Phys. Rev. B }
+\newcommand{\PRD}{Phys. Rev. D }
+\newcommand{\PRE}{Phys. Rev. E }
+\newcommand{\PRL}{Phys. Rev. Lett. }
+\newcommand{\PRX}{Phys. Rev. X }
+\newcommand{\EPL}{EPL (Europhys. Lett.) }
+\newcommand{\RMP}{Rev. Mod. Phys. }
+\newcommand{\NJP}{New. J. Phys. }
+%
+\newcommand{\mb}[1]{\mbox{\boldmath$#1$}}
+\newcommand{\mc}[1]{\mathcal{#1}}
+\newcommand{\mbb}[1]{\mathbb{#1}}
+\newcommand{\mf}[1]{\mathfrak{#1}}
+\newcommand{\mrm}[1]{\mathrm{#1}}
+\newcommand{\clr}{\color{red}}
+\newcommand{\bfm}{\boldsymbol}
+\newcommand{\ptl}[3]{\left( \frac{\partial {#1}}{\partial {#2}} \right)_{#3}}
+
+\def\dbar{{\mathchar'26\mkern-12mu {\rm d}}}
+
+%\newcommand{\sd}[1]{{\color{magenta}#1}}
+\newcommand{\rev}[1]{{\color{red}#1}}
+\newcommand{\note}[1]{\textcolor{red}{#1}}
+\newcommand{\ncite}{\textcolor{red}{ CITE }}
+%\newcommand{\fixme}[1]{\textcolor{purple}{#1}}
+
+\DeclareMathOperator*{\sumint}{%
+\mathchoice%
+  {\ooalign{$\displaystyle\sum$\cr\hidewidth$\displaystyle\int$\hidewidth\cr}}
+  {\ooalign{\raisebox{.14\height}{\scalebox{.7}{$\textstyle\sum$}}\cr\hidewidth$\textstyle\int$\hidewidth\cr}}
+  {\ooalign{\raisebox{.2\height}{\scalebox{.6}{$\scriptstyle\sum$}}\cr$\scriptstyle\int$\cr}}
+  {\ooalign{\raisebox{.2\height}{\scalebox{.6}{$\scriptstyle\sum$}}\cr$\scriptstyle\int$\cr}}
+}
+
+\DeclareMathAlphabet\mathbfcal{OMS}{cmsy}{b}{n}
+
+\makeatletter
+\newcommand{\currentfontsize}{\f@size pt}
+\makeatother
+\newcommand\figsize{.9}
+
+% https://tex.stackexchange.com/questions/35043/reference-different-places-to-the-same-footnote
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
+
 \begin{document}
 
 \title{QUBO encoding effects on quantum annealing efficiency}
-\author{Emery Doucet}
-\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
-\author{Zakaria Mzaouali}
-\affiliation{Institut für Theoretische Physik Universität Tübingen Auf der Morgenstelle 14, 72076 Tübingen, Germany}
-\author{{\L}ukasz Pawela}
-\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
-\author{Bart{\l}omiej Gardas}
-\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
-\author{Sebastian Deffner}
-\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
-\affiliation{National Quantum Laboratory, College Park, MD 20740, USA}
+
 \author{Krzysztof Domino}
+\email{kdomino@iitis.pl}
 \affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
-\date{\today}
+
+
+\author{Emery Doucet}
+\email{emery.doucet@umbc.edu}
+\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\affiliation{Quantum Science Institute, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+
+\author{Reece Robertson}
+\affiliation{Department of Computer Science and Electrical Engineering, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\affiliation{Quantum Science Institute, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+
+\author{Zakaria Mzaouali}
+\affiliation{Institut für Theoretische Physik, Universität Tübingen, Auf der Morgenstelle 14, 72076 Tübingen, Germany}
+
+\author{Bartłomiej Gardas}
+\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Ba{\l}tycka 5, Gliwice, 44-100, Poland}
+
+\author{Sebastian Deffner}
+\homepage{https://quthermo.umbc.edu/} 
+\affiliation{Department of Physics, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\affiliation{Quantum Science Institute, University of Maryland, Baltimore County, Baltimore, MD 21250, USA}
+\affiliation{National Quantum Laboratory, College Park, MD 20740, USA}
 
 \begin{abstract}
 Quantum annealing is an important paradigm of quantum computing which can be used to solve a wide range of problems.
@@ -53,9 +158,9 @@ In doing so, we shed light on the question of what it means for a specific QUBO 
 \end{abstract}
 
 \maketitle
+\section{Introduction}
 
-
-\section{Main question - research goal}
+\subsection{Main question - research goal}
 
 When we vary the hyperparameters of our optimization problems (binary encoding, penalty parameters, annealing details, etc.), what happens to the efficiency of the optimization process? 
 Can this tell us anything about how to choose these hyperparameters, or show us some interesting differences e.g. in the split vs. overlapping cases?
@@ -75,7 +180,7 @@ One place we might start is with one of the classical annealing models which hav
 For example, a model of classical annealing which works by using classical 3D vectors instead of qubits has been tested against the D-Wave machine several times, e.g. in Ref.~\cite{Boixo2014}.
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.66\textwidth]{figs/nphys2900_Fig1ad.pdf}
+	\includegraphics[width=0.50\textwidth]{figs/nphys2900_Fig1ad.pdf}
 	\caption{(Taken from figure 1 of Ref.~\cite{Boixo2014}) Success probabilities for solving 1000 problems each with 108 qubits using (a) the D-Wave One machine and (d) a classical annealing model where the quantum spins are replaced with classical $O(3)$ spins. Both distributions are bimodal showing that some problems are easy and some are hard, but not all problems hard for the classical model appear hard for the quantum annealer. That work also provides comparisons to simulated annealing -- which gives completely different results and to simulated quantum annealing (different from a simulation of a quantum annealer) -- which gives very similar results to quantum annealing.}
 	\label{fig:BoixoDWSD}
 \end{figure}
@@ -175,8 +280,8 @@ Constraint in Eq.~\eqref{eq::sum_to_one_constraint} can be transformed to the un
 Eq.~\eqref{eq::ILP_machines} is encoded in QUBO as follows:
 \begin{equation}
     \begin{split}
-      \forall_{j} \forall_{m \in S_j^- (m_{j, \text{start}}) }  \forall_{t_{\text{min}}(j,\sigma(S_j, m)) \leq t' \leq t_{\text{max}}(j,\sigma(S_j, m))} \forall_{t_{\text{min}}(j,m) \leq t < t' + p_{j,m} }\ \ \  x_{\sigma(S_j, m),j,t'} x_{m, j, t} &= 0 \\
-     \forall_{j \neq j'} \forall_{m \in \mathcal{S}_{j,j'}} \forall_{t_{\text{min}}(j,m) \leq t \leq t_{\text{max}}(j,m)}  \forall^*_{t - p_{j,m} < t' < t + p_{j',m}} \ \ \ \  x_{j,m,t} x_{j', m, t'} &= 0
+      \forall_{j} \forall_{m \in S_j^- (m_{j, \text{start}}) }  \forall_{t_{\text{min}}(j,\sigma(S_j, m)) \leq t' \leq t_{\text{max}}(j,\sigma(S_j, m))} &\\ \forall_{t_{\text{min}}(j,m) \leq t < t' + p_{j,m} } &\\  x_{\sigma(S_j, m),j,t'} x_{m, j, t} &= 0 \\
+     \forall_{j \neq j'} \forall_{m \in \mathcal{S}_{j,j'}} \forall_{t_{\text{min}}(j,m) \leq t \leq t_{\text{max}}(j,m)}  \forall^*_{t - p_{j,m} < t' < t + p_{j',m}} &\\  x_{j,m,t} x_{j', m, t'} &= 0
     \end{split}
     \label{eq::QUBO_machines}
 \end{equation}
@@ -185,8 +290,10 @@ Constraints in Eq.~\eqref{eq::QUBO_machines} yields unconstrained problem as in 
 
 The objective from Eq.~\eqref{eq::ilp_obj} is implemented as the following QUBO term:
 \begin{equation}
-    \text{objective} = \text{min}_{\vec{x}}  \sum_j \sum_{t_{\min}(j, m_{j, \text{end}}) \leq t \leq t_{\max}(j, m_{j, \text{end}})} w'_j t   x_{j, m_{j, \text{end}}, t} - \text{offset}
+\begin{split}
+    &\text{objective} = \\ & \text{min}_{\vec{x}}  \sum_j \sum_{t_{\min}(j, m_{j, \text{end}}) \leq t \leq t_{\max}(j, m_{j, \text{end}})} w'_j t   x_{j, m_{j, \text{end}}, t} - \text{offset}
     \label{eq::ilp_obj}
+\end{split}
 \end{equation}
 (Observe that dislike the ILP approach, generalization to non-linear objective in $t$ is straightforward).
 
@@ -407,13 +514,13 @@ Numerically, we can compute these expectation values
 \begin{align}
     \ev{\Delta E} &= \ev{E(\tau) - E(0)} = \ev{E(\tau)} - \ev{E(0)}
     \\
-    \ev{\Delta E^2} &= \ev{E(\tau)^2 + E(0)^2 - 2E(\tau)E(0)} = \ev{E(\tau)^2} + \ev{E(0)^2} - 2\ev{E(\tau)}\ev{E(0)}
+    \ev{\Delta E^2} &= \ev{E(\tau)^2 + E(0)^2 - 2E(\tau)E(0)}  \\ &=  \ev{E(\tau)^2} + \ev{E(0)^2} - 2\ev{E(\tau)}\ev{E(0)}
 \end{align}
 directly from the time-dependent Hamiltonian combined with the initial and final states of the simulation, giving
 \begin{align}
     \ev{\Delta E} &= \tr\bqty{H(\tau)\rho(\tau)} - \tr\bqty{H(0)\rho(\tau)}
     \\
-    \ev{\Delta E^2} &= \tr\bqty{H(\tau)^2\rho(\tau)} + \tr\bqty{H(0)^2\rho(0)} - 2\tr\bqty{H(\tau)\rho(\tau)}\tr\bqty{H(0)\rho(0)}
+    \ev{\Delta E^2} &= \tr\bqty{H(\tau)^2\rho(\tau)} + \tr\bqty{H(0)^2\rho(0)} \\\ &- 2\tr\bqty{H(\tau)\rho(\tau)}\tr\bqty{H(0)\rho(0)}
 \end{align}
 With this, we can compute thermodynamic uncertainty relations from our numerical experiments as a point of comparison to experiments with real machines.
 
@@ -443,7 +550,7 @@ If we assume that the time interval $\delta t$ is sufficiently short, then we ca
 \end{align}
 The quantum map $\mathcal{U}$ represents the unitary evolution of the system under the time-dependent Hamiltonian,
 \begin{align}
-    \mathcal{U}_{t_{k+1},t_k}\bqty{\rho(t_{k})} = \exp\bqty{-i\int_{t_k}^{t_k+1} \dd{t'} H(t')} \rho(t_{k}) \exp\bqty{i\int_{t_k}^{t_k+1} \dd{t'} H(t')}
+    \mathcal{U}_{t_{k+1},t_k}\bqty{\rho(t_{k})} = \exp\bqty{-i\int_{t_k}^{t_k+1} \dd{t'} H(t')} \rho(t_{k}) \\ \exp\bqty{i\int_{t_k}^{t_k+1} \dd{t'} H(t')}
 \end{align}
 The contribution of the noise is then collected into the quantum map $\mathcal{V}$, representing the propagator of the noise terms only of the adiabatic master equation \cite{Albash2012}.
 Similar to how one approaches fluctuation theorems, we can identify the change in energy due to the unitary map with the work (corresponding to the energetic cost of changing the annealing parameter) and the change in energy due to the noise with the heat (corresponding to energy exchanged with the environment).
@@ -487,6 +594,12 @@ At that point, all the same tests as with quantum annealing could be performed, 
     \item What is the impact of additional layers in the ansatz on the efficiency?
     \item The efficiencies are measured for some particular set of parameters for the parameterized circuit $\vec{\beta}$ and $\vec{\gamma}$. How does the efficiency vary as these parameters are changed, with all the problem parameters fixed? Is the efficiency at the optimal point uniquely good (or bad)?
 \end{enumerate}
+
+
+\section{Acknowledgments}
+
+GitHub Link: \url{https://github.com/iitis/QUBO-encoding-effects-on-quantum-annealing-efficiency}
+
 
 % \bibliographystyle{plain}
 \bibliography{references}
