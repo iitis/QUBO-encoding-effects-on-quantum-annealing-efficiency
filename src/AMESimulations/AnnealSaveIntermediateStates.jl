@@ -1,5 +1,5 @@
 using ArgParse
-using CSV
+using NPZ
 using Plots
 using Printf
 using ProgressBars
@@ -23,6 +23,10 @@ s = ArgParseSettings("Solve a collection of QUBO by explicit simulation of quant
         nargs = '?'
         help = "problem name, used to set result file names"
         default = ""
+    "--beta"
+        arg_type = Float64
+        nargs = '?'
+        help = "temperature of initial state"
     "--annealing-time", "-t"
         arg_type = Float64
         nargs = '?'
@@ -51,6 +55,11 @@ s = ArgParseSettings("Solve a collection of QUBO by explicit simulation of quant
     "--sparse"
         action = :store_true
         help = "use sparse matrices"
+    "--substeps"
+        arg_type = Int64
+        nargs = '?'
+        help = "how many substeps to take (should be a large multiple of the annealing time)"
+        default = 400
 end
 
 parsed_args = parse_args(ARGS, s)
@@ -61,9 +70,11 @@ end
 
 @printf("Solver will run with %d threads.\n", Threads.threadpoolsize())
 
-fn_output = isempty(parsed_args["name"]) ? "AllStatesData.bin" : parsed_args["name"] * "_AllStatesData.bin"
+fn_output     = isempty(parsed_args["name"]) ? "AnnealTrace.bin" : parsed_args["name"] * "_AnnealTrace.bin"
+fn_output_npz = isempty(parsed_args["name"]) ? "AnnealTrace.npz" : parsed_args["name"] * "_AnnealTrace.npz"
 
 # Add keys that we will not use
+parsed_args["initial-state"]    = nothing
 parsed_args["plot-energies"]    = false
 parsed_args["plot-schedule"]    = false
 parsed_args["plot-populations"] = false
@@ -73,33 +84,23 @@ parsed_args["plot-populations"] = false
 ###
 print("Reading problem...")
 problem = LoadQUBOProblem(parsed_args["srcfile"])
-@printf("Done!")
+nbits = QUBOHowManyQubits(problem)
+@printf("Done! Problem has %d bits.\n", nbits)
 
 print("Reading annealing schedule...")
 schedule = AnnealingSchedule(parsed_args["annealing-schedule"], parsed_args["fast-anneal"])
 println("Done!")
 
 tf = parsed_args["annealing-time"]
-s_range = 0:0.0025:1
+s_range = LinRange(0, 1, parsed_args["substeps"])
 
-nbits = QUBOHowManyQubits(problem)
 
-results_list = Vector{Any}(undef, 2^nbits)
-# Threads.@threads :greedy 
-for statenum in ProgressBar(1:2^nbits)
-    # Convert the initial state number to a (little-endian) string of 0s and 1s
-    parsed_args["initial-state"] = bitstring(statenum)[end - (nbits-1):end]
+annealing = SetUpAnnealingProblem(problem, schedule, parsed_args)
+solution_dms = parsed_args["solve-ame"] ? SolveWithAME_dm(annealing, tf, s_range) : SolveWithVN_dm(annealing, tf, s_range)
 
-    annealing = SetUpAnnealingProblem(problem, schedule, parsed_args)
-    solution_pops = parsed_args["solve-ame"] ? SolveWithAME(annealing, tf, s_range) : SolveWithSE(annealing, tf, s_range)
-
-    results_list[statenum] = (
-        initial_state = parsed_args["initial-state"],
-        final_results = ExtractFinalResults(problem, solution_pops)
-    )
-end
-
-# *** Save results to CSV file ***
-print("Saving results...")
-Serialization.serialize(fn_output, results_list)
+# *** Serialize results ***
+#print("Serializing results...")
+#Serialization.serialize(fn_output, solution_dms)
+print("Saving NPZ...")
+npzwrite(fn_output_npz, Dict("T" => tf, "s" => s_range, "rho" => cat(solution_dms..., dims=3)))
 println("Done!")

@@ -33,6 +33,13 @@ function QUBO2Ising(qubo_dict, Nq; sparse=false)
     Hf
 end
 
+function MixerThermalState(Nq, beta)
+    Hmix = (-1/2) * standard_driver(Nq)
+    dm = exp(-beta * Hmix)
+    
+    dm / tr(dm)
+end
+
 function SetUpAnnealingProblem(problem, schedule, args)
     num_qubits = QUBOHowManyQubits(problem)
 
@@ -127,18 +134,33 @@ function SetUpAnnealingProblem(problem, schedule, args)
     bath = Ohmic(η, fc, T)
 
     # Annealing problem
-    ψi = (1 / sqrt(2^num_qubits)) * ones(Complex{Float64}, 2^num_qubits)
-    if parsed_args["initial-state"] != nothing
-        @assert (length(parsed_args["initial-state"]) == num_qubits) "State bitstring must match number of qubits"
-        ψi = q_translate_state(parsed_args["initial-state"])
+    if parsed_args["beta"] != nothing
+        if parsed_args["reverse-anneal-point"] != nothing
+            println("Reverse annealing, initial thermal state is in basis of cost Hamiltonian")
+            dm = exp(-parsed_args["beta"] * ( 1/2) * QUBO2Ising(problem.qubo, num_qubits))
+        else
+            dm = exp(-parsed_args["beta"] * (-1/2) * standard_driver(num_qubits))
+        end
+        annealing = Annealing(
+            H,
+            dm / tr(dm);
+            coupling=bath_coupling,
+            bath=bath
+        )
+    else
+        ψi = (1 / sqrt(2^num_qubits)) * ones(Complex{Float64}, 2^num_qubits)
+        if parsed_args["initial-state"] != nothing
+            @assert (length(parsed_args["initial-state"]) == num_qubits) "State bitstring must match number of qubits"
+            ψi = q_translate_state(parsed_args["initial-state"])
+        end
+    
+        annealing = Annealing(
+            H,
+            ψi;
+            coupling=bath_coupling,
+            bath=bath
+        )
     end
-
-    annealing = Annealing(
-        H,
-        ψi;
-        coupling=bath_coupling,
-        bath=bath
-    )
 
     annealing
 end
@@ -156,7 +178,21 @@ function SolveWithSE(annealing_problem, annealing_time, ss)
         z -> abs(z)^2,
         reduce(
             hcat,
-            sol_se.(tf * s_range)
+            sol_se.(annealing_time * ss)
+        )
+    )
+
+    populations
+end
+
+function SolveWithVN(annealing_problem, annealing_time, ss)
+    sol_vn = solve_von_neumann(annealing_problem, annealing_time, alg=Vern9(), abstol=1e-9, reltol=1e-9)
+
+    populations = reduce(
+        hcat, 
+        map(
+            ρ -> abs.(diag(ρ)), # Convert Complex64 to Float64, also fix spurious tiny negative values
+            sol_vn.(annealing_time * ss)
         )
     )
 
@@ -172,11 +208,25 @@ function SolveWithAME(annealing_problem, annealing_time, ss)
         hcat, 
         map(
             ρ -> abs.(diag(ρ)), # Convert Complex64 to Float64, also fix spurious tiny negative values
-            sol_ame.(tf * s_range)
+            sol_ame.(annealing_time * ss)
         )
     )
 
     populations
+end
+
+function SolveWithVN_dm(annealing_problem, annealing_time, ss)
+    sol_vn = solve_von_neumann(annealing_problem, annealing_time, alg=Vern9(), abstol=1e-9, reltol=1e-9)
+    
+    sol_vn.(annealing_time * ss)
+end
+
+function SolveWithAME_dm(annealing_problem, annealing_time, ss)
+    # Vern6 appears to be fastest on the 4 qubit problem, probably Vern7 is faster on larger problems
+    U = solve_unitary(annealing_problem, annealing_time, alg=Vern6(), abstol=1e-9, reltol=1e-9)
+    sol_ame = solve_redfield(annealing_problem, annealing_time, U; alg=Vern6(), abstol=1e-9, reltol=1e-9)
+
+    sol_ame(annealing_time * ss)
 end
 
 function ExtractFinalResults(problem, solution_pops)
