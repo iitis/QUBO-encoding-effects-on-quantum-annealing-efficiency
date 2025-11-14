@@ -3,6 +3,8 @@ from collections import OrderedDict
 from JobShop_QUBO import Job, JobShop
 
 from JobShop_QUBO import QUBO_Variables, Implement_QUBO, add_to_dict
+from instances import instance_4q
+from instances import create_QUBO_dict
 
 
 def test_suxiliary():
@@ -186,6 +188,72 @@ def test_QUBO_implmenetation():
 
 
 
+def test_varying_sum_pair_pars():
+
+        J1 = Job(id = 1, m_p=OrderedDict({1:2, 2:2}), release=1, due=7, weight=1.0)
+        J2 = Job(id = 2, m_p=OrderedDict({2:2}), release=2, due=7, weight=1.0)
+
+        JS = JobShop([J1, J2])
+
+        for psum in [0.01, 0.5, 10, 100.5]:
+            for ppair in [0.01, 0.5, 10, 100.5]:
+                qubo = Implement_QUBO(JS, psum = psum, ppair = ppair)
+                qubo.sum_constraint()
+                assert qubo.qubo_variables.size == 10
+                
+
+
+                assert qubo.qubo_terms== {(1, 1): -psum, (1, 2): psum, (1, 3): psum, (2, 1): psum, 
+                                        (2, 2): -psum, (2, 3): psum, (3, 1): psum, (3, 2): psum, 
+                                        (3, 3): -psum, (4, 4): -psum, (4, 5): psum, (4, 6): psum, (5, 4): psum, 
+                                        (5, 5): -psum, (5, 6): psum, (6, 4): psum, (6, 5): psum, 
+                                        (6, 6): -psum, 
+                                        (7, 7): -psum, (7, 8): psum, (7, 9): psum, (7, 10): psum, (8, 7): psum, 
+                                        (8, 8): -psum, (8, 9): psum, (8, 10): psum, (9, 7): psum, (9, 8): psum, 
+                                        (9, 9): -psum, (9, 10): psum, (10, 7): psum, (10, 8): psum, (10, 9): psum, 
+                                        (10, 10): -psum}
+                
+                qubo = Implement_QUBO(JS, psum = psum, ppair = ppair)
+                qubo.pair_constraint_process_t()
+
+                assert qubo.qubo_terms == {(4,2): ppair, (2, 4): ppair, (4, 3): ppair, (3, 4): ppair, (5, 3): ppair, (3, 5): ppair}
+
+                qubo = Implement_QUBO(JS, psum = psum, ppair = ppair)
+                qubo.pair_constraint_occupancy()
+
+                assert qubo.qubo_terms == {(4, 7): ppair, (4, 8): ppair, (4, 9): ppair, (5, 8): ppair, (5, 9): ppair, (5, 10): ppair, 
+                                    (6, 9): ppair, (6, 10): ppair, (7, 4): ppair, (8, 4): ppair, (8, 5): ppair, (9, 4): ppair, 
+                                    (9, 5): ppair, (9, 6): ppair, (10, 5): ppair, (10, 6): ppair}
+
+
+
+def test_creating_QUBOs():
+    """ this is 4q instnce splited in details"""
+
+    no_qbits=4
+
+    for psum in [0.01, 0.5, 10, 100.5]:
+        for ppair in [0.01, 0.5, 10, 100.5]:
+
+
+            d = create_QUBO_dict(no_qbits, instance_4q(), psum, ppair)
+            obj = d["objective_part"]
+
+            assert obj == {(1, 1): 0.0, (2, 2): 1.0, (3, 3): 0.0, (4, 4): 0.5}
+
+            assert d["qubo"] == {(1, 1): -psum + obj[(1,1)], 
+                                (1, 2): psum, (2, 1): psum, 
+                                (2, 2): -psum + obj[(2,2)], 
+                                (3, 3): -psum + obj[(3,3)], 
+                                (3, 4): psum, (4, 3): psum, 
+                                (4, 4): -psum + obj[(4,4)], 
+                                (1, 3): ppair, (2, 4): ppair, (3, 1): ppair, (4, 2): ppair}
+            
+
+            assert d["offset"] == 2 * psum
+
+
+
 
 def test_pair_constraints_further():
     """ degenerated instance """
@@ -318,6 +386,9 @@ def test_objective():
     
     x1 = qubo.schedule_2_x({1: {1: (5, 7)}, 2: {1: (1, 5)}})
     assert x1 == x
+
+
+
 
 
 
