@@ -3,7 +3,7 @@ from collections import OrderedDict
 from JobShop_QUBO import Job, JobShop
 
 from JobShop_QUBO import QUBO_Variables, Implement_QUBO, add_to_dict
-from instances import instance_4q
+from instances import instance_4q, instance_5q
 from instances import create_QUBO_dict
 
 
@@ -247,6 +247,31 @@ def test_creating_QUBOs():
                                 (3, 3): -psum + obj[(3,3)], 
                                 (3, 4): psum, (4, 3): psum, 
                                 (4, 4): -psum + obj[(4,4)], 
+                                (1, 3): ppair, (2, 4): ppair, (3, 1): ppair, (4, 2): ppair}
+            
+
+            assert d["offset"] == 2 * psum
+
+        """ this is 4q instnce splited in details"""
+
+    no_qbits=5
+
+    for psum in [0.01, 0.5, 10, 100.5]:
+        for ppair in [0.01, 0.5, 10, 100.5]:
+
+
+            d = create_QUBO_dict(no_qbits, instance_5q(), psum, ppair)
+            obj = d["objective_part"]
+
+            assert obj == {(1, 1): 0.0, (2, 2): 1.0, (3, 3): 0.0, (4, 4): 0.25, (5, 5): 0.5}
+
+            print(d["qubo"])
+            assert d["qubo"] == {(1, 1): -psum + obj[(1,1)], 
+                                (1, 2): psum, (2, 1): psum, 
+                                (2, 2): -psum + obj[(2,2)], 
+                                (3, 3): -psum + obj[(3,3)], (3, 4): psum, (3, 5): psum, 
+                                (4, 3): psum, (4, 4): -psum + obj[(4,4)], (4, 5): psum,
+                                (5, 3): psum, (5, 4):psum, (5, 5):  -psum + obj[(5,5)],
                                 (1, 3): ppair, (2, 4): ppair, (3, 1): ppair, (4, 2): ppair}
             
 
