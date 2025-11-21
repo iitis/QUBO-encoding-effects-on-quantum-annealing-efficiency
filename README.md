@@ -9,7 +9,8 @@ Through a combination of experiments on a D-Wave device and numerical simulation
 
 # Project Structure
 
-1. ```src``` – Contains the code for solving JobShob problems on a quantum device and analysis of the thermodynamics of quantum annealers.
+```src``` – contains the code for solving JobShob problems on a quantum device and analysis of the thermodynamics of quantum annealers.
+1. ```src/QUBO4JobShop``` - implementation of actual JobShop problems for various problem sizes, for details see ```src/QUBO4JobShop/REAMDE.md```
 
 
 # Funding
