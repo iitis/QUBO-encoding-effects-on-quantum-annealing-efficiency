@@ -13,7 +13,7 @@ Through a combination of experiments on a D-Wave device and numerical simulation
 1. ```src/QUBO4JobShop``` - Scripts to generate JobShop problems for various problem sizes. For details, see ```src/QUBO4JobShop/REAMDE.md```
 2. ```src/ClassicalSimulations``` - Scripts to solve QUBOs using the classical solvers provided by the D-Wave Ocean SDK and visualize the results.
 3. ```src/AMESimulations``` - Code to simulate the quantum annealing process as well as wrapper scripts to orchestrate numerical parameter sweeps. For additional details, see ```src/AMESimulations/README.md```
-4. ```src/QUBO4JobShop/thermo.pw``` - Script used to perform thermodynamical experiment on D-Wave quantum annealer
+4. ```src/QUBO4JobShop/thermo.py``` - Script used to perform thermodynamical experiment on D-Wave quantum annealer
 5. ```src/AMEAnalysis``` - Script to post-process simulation results and extract thermodynamic quantities.
 6. ```src/Plotting``` - Scripts to plot post-processed simulation outputs, and to visualize features of the QUBO solution landscape.
 
